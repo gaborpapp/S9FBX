@@ -1,0 +1,612 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 44;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		005D2F011132E7D800BBAC73 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		005D2F021132E7D800BBAC73 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0091D8F80E81B9330029341E /* OpenGL.framework */; };
+		005D2F031132E7D800BBAC73 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53E3CDFB0E86099300238D2B /* Carbon.framework */; };
+		005D2F041132E7D800BBAC73 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
+		005D2F051132E7D800BBAC73 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
+		005D2F061132E7D800BBAC73 /* QuickTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0097E3E40F3E9819005A4392 /* QuickTime.framework */; };
+		005D2F071132E7D800BBAC73 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E0B6140F60DE8F002C8FBD /* ApplicationServices.framework */; };
+		005D2F081132E7D800BBAC73 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C073570FF32F8B004801EA /* Accelerate.framework */; };
+		005D2F091132E7D800BBAC73 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C073580FF32F8B004801EA /* AudioToolbox.framework */; };
+		005D2F0A1132E7D800BBAC73 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C073590FF32F8B004801EA /* AudioUnit.framework */; };
+		005D2F0B1132E7D800BBAC73 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C0735A0FF32F8B004801EA /* CoreAudio.framework */; };
+		0091D8F90E81B9330029341E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0091D8F80E81B9330029341E /* OpenGL.framework */; };
+		0097E3E50F3E9819005A4392 /* QuickTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0097E3E40F3E9819005A4392 /* QuickTime.framework */; };
+		00C0735B0FF32F8B004801EA /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C073570FF32F8B004801EA /* Accelerate.framework */; };
+		00C0735C0FF32F8B004801EA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C073580FF32F8B004801EA /* AudioToolbox.framework */; };
+		00C0735D0FF32F8B004801EA /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C073590FF32F8B004801EA /* AudioUnit.framework */; };
+		00C0735E0FF32F8B004801EA /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C0735A0FF32F8B004801EA /* CoreAudio.framework */; };
+		00E0B6150F60DE8F002C8FBD /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E0B6140F60DE8F002C8FBD /* ApplicationServices.framework */; };
+		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
+		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
+		53E3CDFC0E86099300238D2B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53E3CDFB0E86099300238D2B /* Carbon.framework */; };
+		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		8F185B7012EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
+		8F185B7112EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
+		8F36E482137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */; };
+		8F36E483137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */; };
+		8F36E4A4137DE6C90036A1AB /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A3137DE6C90036A1AB /* CinderApp.icns */; };
+		8F36E4A5137DE6C90036A1AB /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A3137DE6C90036A1AB /* CinderApp.icns */; };
+		8F36E4A9137DE7B20036A1AB /* skinning_config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A8137DE7B20036A1AB /* skinning_config.xml */; };
+		8F36E4AA137DE7B20036A1AB /* skinning_config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A8137DE7B20036A1AB /* skinning_config.xml */; };
+		8F36E4AC137DE7BC0036A1AB /* skinning_config.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4A8137DE7B20036A1AB /* skinning_config.xml */; };
+		8F36E4AE137DE7D40036A1AB /* skinning_config.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4A8137DE7B20036A1AB /* skinning_config.xml */; };
+		8F36E4BF137DE8020036A1AB /* sinbad_body.tga in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BB137DE8020036A1AB /* sinbad_body.tga */; };
+		8F36E4C0137DE8020036A1AB /* sinbad_clothes.tga in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */; };
+		8F36E4C1137DE8020036A1AB /* sinbad_sword.tga in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */; };
+		8F36E4C2137DE8020036A1AB /* Sinbad.fbx in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BE137DE8020036A1AB /* Sinbad.fbx */; };
+		8F36E4C3137DE8020036A1AB /* sinbad_body.tga in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BB137DE8020036A1AB /* sinbad_body.tga */; };
+		8F36E4C4137DE8020036A1AB /* sinbad_clothes.tga in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */; };
+		8F36E4C5137DE8020036A1AB /* sinbad_sword.tga in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */; };
+		8F36E4C6137DE8020036A1AB /* Sinbad.fbx in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4BE137DE8020036A1AB /* Sinbad.fbx */; };
+		8F36E4CA137DE83F0036A1AB /* sinbad_body.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BB137DE8020036A1AB /* sinbad_body.tga */; };
+		8F36E4CB137DE83F0036A1AB /* sinbad_clothes.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */; };
+		8F36E4CC137DE83F0036A1AB /* sinbad_sword.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */; };
+		8F36E4CD137DE83F0036A1AB /* Sinbad.fbx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BE137DE8020036A1AB /* Sinbad.fbx */; };
+		8F36E4CE137DE8420036A1AB /* sinbad_body.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BB137DE8020036A1AB /* sinbad_body.tga */; };
+		8F36E4CF137DE8420036A1AB /* sinbad_clothes.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */; };
+		8F36E4D0137DE8420036A1AB /* sinbad_sword.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */; };
+		8F36E4D1137DE8420036A1AB /* Sinbad.fbx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BE137DE8020036A1AB /* Sinbad.fbx */; };
+		8F36E58B137DEE0F0036A1AB /* Common.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E58A137DEE0F0036A1AB /* Common.cxx */; };
+		8F36E58C137DEE0F0036A1AB /* Common.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E58A137DEE0F0036A1AB /* Common.cxx */; };
+		8F36E59A137DEE340036A1AB /* libfbxsdk_20113.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
+		8F36E59B137DEE3B0036A1AB /* libfbxsdk_20113.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
+		8F727E2D12E0BC7E00EBCA42 /* Skinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */; };
+		8F727E3012E0BC7E00EBCA42 /* Skinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8F36E4AB137DE7B20036A1AB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				8F36E59A137DEE340036A1AB /* libfbxsdk_20113.dylib in CopyFiles */,
+				8F36E4AC137DE7BC0036A1AB /* skinning_config.xml in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8F36E4B9137DE7EB0036A1AB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				8F36E59B137DEE3B0036A1AB /* libfbxsdk_20113.dylib in CopyFiles */,
+				8F36E4AE137DE7D40036A1AB /* skinning_config.xml in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8F36E4D5137DE84B0036A1AB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = data;
+			dstSubfolderSpec = 16;
+			files = (
+				8F36E4CA137DE83F0036A1AB /* sinbad_body.tga in CopyFiles */,
+				8F36E4CB137DE83F0036A1AB /* sinbad_clothes.tga in CopyFiles */,
+				8F36E4CC137DE83F0036A1AB /* sinbad_sword.tga in CopyFiles */,
+				8F36E4CD137DE83F0036A1AB /* Sinbad.fbx in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8F36E4D6137DE84B0036A1AB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = data;
+			dstSubfolderSpec = 16;
+			files = (
+				8F36E4CE137DE8420036A1AB /* sinbad_body.tga in CopyFiles */,
+				8F36E4CF137DE8420036A1AB /* sinbad_clothes.tga in CopyFiles */,
+				8F36E4D0137DE8420036A1AB /* sinbad_sword.tga in CopyFiles */,
+				8F36E4D1137DE8420036A1AB /* Sinbad.fbx in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		005D2F0F1132E7D800BBAC73 /* Skinning.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Skinning.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0091D8F80E81B9330029341E /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		0097E3E40F3E9819005A4392 /* QuickTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickTime.framework; path = /System/Library/Frameworks/QuickTime.framework; sourceTree = "<absolute>"; };
+		00C073570FF32F8B004801EA /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		00C073580FF32F8B004801EA /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		00C073590FF32F8B004801EA /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		00C0735A0FF32F8B004801EA /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		00E0B6140F60DE8F002C8FBD /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
+		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
+		5323E6B50EAFCA7E003A9687 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
+		53E3CDFB0E86099300238D2B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* Skinning.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Skinning.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk_20113.dylib; path = /Applications/Autodesk/FBXSDK20113/lib/gcc4/libfbxsdk_20113.dylib; sourceTree = "<absolute>"; };
+		8F36627312E0E0DC00FB5340 /* Skinning.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Skinning.h; path = include/Skinning.h; sourceTree = "<group>"; };
+		8F36E47F137DE6710036A1AB /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Common.h; path = ../../../include/Common.h; sourceTree = SOURCE_ROOT; };
+		8F36E480137DE6710036A1AB /* S9FbxLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = S9FbxLoader.h; path = ../../../include/S9FbxLoader.h; sourceTree = SOURCE_ROOT; };
+		8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = S9FbxLoader.cpp; path = src/S9FbxLoader.cpp; sourceTree = "<group>"; };
+		8F36E4A3137DE6C90036A1AB /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = CinderApp.icns; sourceTree = "<group>"; };
+		8F36E4A8137DE7B20036A1AB /* skinning_config.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = skinning_config.xml; path = resources/skinning_config.xml; sourceTree = "<group>"; };
+		8F36E4BB137DE8020036A1AB /* sinbad_body.tga */ = {isa = PBXFileReference; lastKnownFileType = file; name = sinbad_body.tga; path = resources/sinbad_body.tga; sourceTree = "<group>"; };
+		8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */ = {isa = PBXFileReference; lastKnownFileType = file; name = sinbad_clothes.tga; path = resources/sinbad_clothes.tga; sourceTree = "<group>"; };
+		8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */ = {isa = PBXFileReference; lastKnownFileType = file; name = sinbad_sword.tga; path = resources/sinbad_sword.tga; sourceTree = "<group>"; };
+		8F36E4BE137DE8020036A1AB /* Sinbad.fbx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Sinbad.fbx; path = resources/Sinbad.fbx; sourceTree = "<group>"; };
+		8F36E58A137DEE0F0036A1AB /* Common.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cxx; sourceTree = "<group>"; };
+		8F727E2412E0BC7100EBCA42 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = include/config.h; sourceTree = "<group>"; };
+		8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Skinning.cpp; path = src/Skinning.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		005D2F001132E7D800BBAC73 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				005D2F011132E7D800BBAC73 /* Cocoa.framework in Frameworks */,
+				005D2F021132E7D800BBAC73 /* OpenGL.framework in Frameworks */,
+				005D2F031132E7D800BBAC73 /* Carbon.framework in Frameworks */,
+				005D2F041132E7D800BBAC73 /* CoreVideo.framework in Frameworks */,
+				005D2F051132E7D800BBAC73 /* QTKit.framework in Frameworks */,
+				005D2F061132E7D800BBAC73 /* QuickTime.framework in Frameworks */,
+				005D2F071132E7D800BBAC73 /* ApplicationServices.framework in Frameworks */,
+				005D2F081132E7D800BBAC73 /* Accelerate.framework in Frameworks */,
+				005D2F091132E7D800BBAC73 /* AudioToolbox.framework in Frameworks */,
+				005D2F0A1132E7D800BBAC73 /* AudioUnit.framework in Frameworks */,
+				005D2F0B1132E7D800BBAC73 /* CoreAudio.framework in Frameworks */,
+				8F185B7112EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D11072E0486CEB800E47090 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
+				0091D8F90E81B9330029341E /* OpenGL.framework in Frameworks */,
+				53E3CDFC0E86099300238D2B /* Carbon.framework in Frameworks */,
+				5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */,
+				5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */,
+				0097E3E50F3E9819005A4392 /* QuickTime.framework in Frameworks */,
+				00E0B6150F60DE8F002C8FBD /* ApplicationServices.framework in Frameworks */,
+				00C0735B0FF32F8B004801EA /* Accelerate.framework in Frameworks */,
+				00C0735C0FF32F8B004801EA /* AudioToolbox.framework in Frameworks */,
+				00C0735D0FF32F8B004801EA /* AudioUnit.framework in Frameworks */,
+				00C0735E0FF32F8B004801EA /* CoreAudio.framework in Frameworks */,
+				8F185B7012EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				8F36E58A137DEE0F0036A1AB /* Common.cxx */,
+				8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */,
+				8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				00C073570FF32F8B004801EA /* Accelerate.framework */,
+				00C073580FF32F8B004801EA /* AudioToolbox.framework */,
+				00C073590FF32F8B004801EA /* AudioUnit.framework */,
+				00C0735A0FF32F8B004801EA /* CoreAudio.framework */,
+				00E0B6140F60DE8F002C8FBD /* ApplicationServices.framework */,
+				0097E3E40F3E9819005A4392 /* QuickTime.framework */,
+				5323E6B50EAFCA7E003A9687 /* QTKit.framework */,
+				5323E6B10EAFCA74003A9687 /* CoreVideo.framework */,
+				53E3CDFB0E86099300238D2B /* Carbon.framework */,
+				0091D8F80E81B9330029341E /* OpenGL.framework */,
+				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */,
+				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
+				13E42FB307B3F0F600E4EEF1 /* CoreData.framework */,
+				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* Skinning.app */,
+				005D2F0F1132E7D800BBAC73 /* Skinning.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* ShadowVolumes */ = {
+			isa = PBXGroup;
+			children = (
+				8F10D9F612A7BC2600C3172C /* Include */,
+				080E96DDFE201D6D7F000001 /* Source */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = ShadowVolumes;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8F36E4C7137DE80A0036A1AB /* Sinbad */,
+				8F36E4A8137DE7B20036A1AB /* skinning_config.xml */,
+				8F36E4A3137DE6C90036A1AB /* CinderApp.icns */,
+				8D1107310486CEB800E47090 /* Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
+				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8F10D9F612A7BC2600C3172C /* Include */ = {
+			isa = PBXGroup;
+			children = (
+				8F36E47F137DE6710036A1AB /* Common.h */,
+				8F36E480137DE6710036A1AB /* S9FbxLoader.h */,
+				8F36627312E0E0DC00FB5340 /* Skinning.h */,
+				8F727E2412E0BC7100EBCA42 /* config.h */,
+			);
+			name = Include;
+			sourceTree = "<group>";
+		};
+		8F36E4C7137DE80A0036A1AB /* Sinbad */ = {
+			isa = PBXGroup;
+			children = (
+				8F36E4BB137DE8020036A1AB /* sinbad_body.tga */,
+				8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */,
+				8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */,
+				8F36E4BE137DE8020036A1AB /* Sinbad.fbx */,
+			);
+			name = Sinbad;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		005D2EFC1132E7D800BBAC73 /* Skinning_x86_64 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 005D2F0C1132E7D800BBAC73 /* Build configuration list for PBXNativeTarget "Skinning_x86_64" */;
+			buildPhases = (
+				005D2EFD1132E7D800BBAC73 /* Resources */,
+				005D2EFE1132E7D800BBAC73 /* Sources */,
+				005D2F001132E7D800BBAC73 /* Frameworks */,
+				8F36E4B9137DE7EB0036A1AB /* CopyFiles */,
+				8F36E4D6137DE84B0036A1AB /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Skinning_x86_64;
+			productInstallPath = "$(HOME)/Applications";
+			productName = ShadowVolumes;
+			productReference = 005D2F0F1132E7D800BBAC73 /* Skinning.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8D1107260486CEB800E47090 /* Skinning */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Skinning" */;
+			buildPhases = (
+				8D1107290486CEB800E47090 /* Resources */,
+				8D11072C0486CEB800E47090 /* Sources */,
+				8D11072E0486CEB800E47090 /* Frameworks */,
+				8F36E4AB137DE7B20036A1AB /* CopyFiles */,
+				8F36E4D5137DE84B0036A1AB /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Skinning;
+			productInstallPath = "$(HOME)/Applications";
+			productName = ShadowVolumes;
+			productReference = 8D1107320486CEB800E47090 /* Skinning.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = NO;
+			};
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Skinning" */;
+			compatibilityVersion = "Xcode 3.0";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* ShadowVolumes */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D1107260486CEB800E47090 /* Skinning */,
+				005D2EFC1132E7D800BBAC73 /* Skinning_x86_64 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		005D2EFD1132E7D800BBAC73 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8F36E4A4137DE6C90036A1AB /* CinderApp.icns in Resources */,
+				8F36E4A9137DE7B20036A1AB /* skinning_config.xml in Resources */,
+				8F36E4BF137DE8020036A1AB /* sinbad_body.tga in Resources */,
+				8F36E4C0137DE8020036A1AB /* sinbad_clothes.tga in Resources */,
+				8F36E4C1137DE8020036A1AB /* sinbad_sword.tga in Resources */,
+				8F36E4C2137DE8020036A1AB /* Sinbad.fbx in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D1107290486CEB800E47090 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8F36E4A5137DE6C90036A1AB /* CinderApp.icns in Resources */,
+				8F36E4AA137DE7B20036A1AB /* skinning_config.xml in Resources */,
+				8F36E4C3137DE8020036A1AB /* sinbad_body.tga in Resources */,
+				8F36E4C4137DE8020036A1AB /* sinbad_clothes.tga in Resources */,
+				8F36E4C5137DE8020036A1AB /* sinbad_sword.tga in Resources */,
+				8F36E4C6137DE8020036A1AB /* Sinbad.fbx in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		005D2EFE1132E7D800BBAC73 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8F727E3012E0BC7E00EBCA42 /* Skinning.cpp in Sources */,
+				8F36E482137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */,
+				8F36E58B137DEE0F0036A1AB /* Common.cxx in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D11072C0486CEB800E47090 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8F727E2D12E0BC7E00EBCA42 /* Skinning.cpp in Sources */,
+				8F36E483137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */,
+				8F36E58C137DEE0F0036A1AB /* Common.cxx in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		005D2F0D1132E7D800BBAC73 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = x86_64;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Section9Base_Prefix.pch;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INFOPLIST_FILE = "";
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\"$(SRCROOT)/../../../xcode/libcinder/build/Release\\\"",
+					"\\\"$(SRCROOT)/../../../xcode/libcinder/build/Debug\\\"",
+					"\\\"$(SRCROOT)/../../../xcode/build/Debug\\\"",
+					"\\\"$(SRCROOT)/../../../lib\\\"",
+					"\"$(SYSTEM_APPS_DIR)/Autodesk/FBXSDK20113/lib/gcc4\"",
+				);
+				OTHER_LDFLAGS = (
+					"../../../../../lib/libcinder-x86_64_d.a",
+					"-lz",
+				);
+				PRODUCT_NAME = Skinning;
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		005D2F0E1132E7D800BBAC73 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = x86_64;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DEBUGGING_SYMBOLS = full;
+				GCC_ENABLE_SYMBOL_SEPARATION = NO;
+				GCC_FAST_MATH = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ShadowVolumes_Prefix.pch;
+				INFOPLIST_FILE = "/Users/andrewfb/Code/cinder/samples/ShadowVolumes/xcode/Info copy.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				LD_GENERATE_MAP_FILE = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\"$(SRCROOT)/../../../xcode/libcinder/build/Release\\\"",
+					"\\\"$(SRCROOT)/../../../xcode/libcinder/build/Debug\\\"",
+					"\\\"$(SRCROOT)/../../../xcode/build/Debug\\\"",
+					"\\\"$(SRCROOT)/../../../lib\\\"",
+					"\"$(SYSTEM_APPS_DIR)/Autodesk/FBXSDK20113/lib/gcc4\"",
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_LDFLAGS = "../../../lib/libcinder-x86_64.a";
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
+				PRODUCT_NAME = Skinning;
+				STRIP_INSTALLED_PRODUCT = YES;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		C01FCF4B08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Autodesk/FBXSDK20113/lib/gcc4\"",
+				);
+				OTHER_LDFLAGS = ../../../../../lib/libcinder_d.a;
+				PRODUCT_NAME = Skinning;
+				USER_HEADER_SEARCH_PATHS = "/Applications/Autodesk/FBXSDK20113/include $(CINDER_PATH)/include";
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		C01FCF4C08A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DEBUGGING_SYMBOLS = full;
+				GCC_ENABLE_SYMBOL_SEPARATION = NO;
+				GCC_FAST_MATH = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LD_GENERATE_MAP_FILE = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Autodesk/FBXSDK20113/lib/gcc4\"",
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_LDFLAGS = ../../../lib/libcinder.a;
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
+				PRODUCT_NAME = Skinning;
+				STRIP_INSTALLED_PRODUCT = YES;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = i386;
+				CINDER_PATH = ../../../../..;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(CINDER_PATH)/boost";
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
+				USER_HEADER_SEARCH_PATHS = "$(CINDER_PATH)/include";
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = i386;
+				CINDER_PATH = ../../..;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(CINDER_PATH)/boost";
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
+				USER_HEADER_SEARCH_PATHS = "/Applications/Autodesk/FBXSDK20113/include $(CINDER_PATH)/include";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		005D2F0C1132E7D800BBAC73 /* Build configuration list for PBXNativeTarget "Skinning_x86_64" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				005D2F0D1132E7D800BBAC73 /* Debug */,
+				005D2F0E1132E7D800BBAC73 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Skinning" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4B08A954540054247B /* Debug */,
+				C01FCF4C08A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Skinning" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}
