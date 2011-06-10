@@ -1,0 +1,33 @@
+                       __  .__              ________ 
+   ______ ____   _____/  |_|__| ____   ____/   __   \
+  /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
+  \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
+ /____  >\___  >\___  >__| |__|\____/|___|  //____/  .co.uk
+      \/     \/     \/                    \/         
+ 
+ THE GHOST IN THE CSH - Benjamin Blundell - www.section9.co.uk - oni@section9.co.uk
+
+FBX Loader and Drawer - With Skinning and Bones support!
+
+Yup, this is my first attempt at a Cinder plugin. Currently, it is OSX only BUT I'll be fixing that for Windows in the nearfuture. It will probably work but you'll need to link against a different FBX Library than the one included.
+
+The FBX file-format has an awful lot in it, such as support for canned animation, different materials, rigs, you name it. This set of classes only just scratch the surface. To learn more about FBX check out: http://usa.autodesk.com/adsk/servlet/index?siteID=123112&id=7478532
+
+Wikipedia also has a good overview as well. Essentially, if you need models that are more complicated than an OBJ, don't bother with Collada or anything else. Just use FBX. It's easier!
+
+
+So far, there are 2 main classes, S9FbxLoader and S9FbxDrawer. S9FbxLoader returns an FbxDrawable which contains what you need to draw and splat to the screen. An FbxDrawable contains a set of FbxMesh classes and a set of textures. It is possible for an FBX File to contain many meshes, each with its own set of matrices, textures etc. Normally, the practice is to just have one though. 
+
+An FbxMesh contains a set of indicies, vertices, normals, tex-coords and similar. There is also a second set of vertices which are these vertices transformed by rotating the bones within the FBX file.
+
+Included is an application called Skinning which loads the Sinbad Model from the OGRE project. If you press 'p' on the keyboard you should see a set of parameters. Typing in the number of the bone will allow you to rotate it.
+
+The rest of code should be self explanatory. If not, hit me up on email.
+
+Credits:
+
+Zi at the OGRE Project for the Sinbad Model: http://www.ogre3d.org/tag/sinbad
+All the people over at LibCinder, the AutoDesk forums and to Memo Akten for putting me on to FBX in the first place!
+
+
+
