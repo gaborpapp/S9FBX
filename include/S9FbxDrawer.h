@@ -1,15 +1,15 @@
 /*
-                       __  .__              ________ 
+					   __  .__              ________ 
    ______ ____   _____/  |_|__| ____   ____/   __   \
   /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
   \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
  /____  >\___  >\___  >__| |__|\____/|___|  //____/  .co.uk
-	  \/     \/     \/                    \/         
+      \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
  
  
- Skinning.h | Part of Skinning | Created 13/05/2011
+ S9FbxDrawer.h | Part of S9FBX | Created 01/06/2011
  
  Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
  *** Section9 ***
@@ -40,74 +40,45 @@
  *
  * ***********************************************************************/
 
+
 #pragma once
 
 #include "cinder/app/AppBasic.h"
-#include "cinder/Rand.h"
-#include "cinder/Camera.h"
-#include "cinder/gl/GlslProg.h"
-#include "cinder/Perlin.h"
-#include "cinder/Vector.h"
-#include "cinder/Sphere.h"
+#include "cinder/ImageIo.h"
+#include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
-#include "cinder/Xml.h"
-#include "cinder/params/Params.h"
-#include "cinder/gl/Vbo.h"
-#include "cinder/ObjLoader.h"
-#include "cinder/TriMesh.h"
+#include "cinder/Matrix.h"
 #include "cinder/Font.h"
 #include "cinder/Utilities.h"
+#include "cinder/gl/Vbo.h"
+#include "cinder/Sphere.h"
 
 #include "S9FbxLoader.h"
-#include "S9FbxDrawer.h"
-#include "config.h"
 
-
-using namespace ci;
-using namespace ci::app;
 using namespace std;
+using namespace cinder;
+using namespace ci;
 
-class Skinning : public AppBasic {
-public:
+namespace S9 {
 
-	void setup();
-	void mouseDrag( MouseEvent event );
-	void keyDown( KeyEvent event );
-	void draw();
-	void shutdown();
+	class S9FbxDrawer {
+	public:
+		
+		S9FbxDrawer() {};
 	
-protected:
+		void	draw(shared_ptr<FbxDrawable> drawable);		
+		void	rotateBone(shared_ptr<FbxMesh> pMesh, int boneid, ci::Matrix44f &mat); 
+		void	resetRotations(shared_ptr<FbxMesh> pMesh);
+		void	drawMeshExtents(shared_ptr<FbxMesh> pMesh);
+		void	drawClusters(shared_ptr<FbxDrawable> pDrawable);
 	
-	void resize( ResizeEvent event );
-	void drawGeometry();
-	void update();
-	void resetBones();
-	
-	// Cameras
-	CameraPersp			mCam;
-	
-	// Params
-	params::InterfaceGl	mParams;
-	bool				mShowParams;
-	
-	// Geometry
-	TriMesh				mCompanionCube;
-	gl::VboMesh			mCompanionCubeVBO;
-	Sphere				mSphere;
-	
-	// Font for FPS
-	Font				mFont;
-	
-	// FBX Stuff
-	S9::S9FbxLoader		mFBXLoader;
-	S9::S9FbxDrawer		mFBXDrawer;
-	bool				mDrawFilled;
-	
-	shared_ptr<S9::FbxDrawable>	pDrawable;
-	
-	ci::Quatf			mTestBoneRot;
-	float				mTestBoneTrans;
-	int					mBoneID;
-	int					mPrevBoneID;
 
-};
+	protected:
+
+		void rotateBoneRecursive(shared_ptr<FbxRotation> pRot, shared_ptr<Matrix44f> pmat, Matrix44f rmat, shared_ptr<FbxMesh> pMesh);
+		void applyRotations(shared_ptr<FbxMesh> pMesh);
+	
+	};
+
+	
+}

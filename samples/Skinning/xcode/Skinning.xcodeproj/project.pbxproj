@@ -31,8 +31,6 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		8F185B7012EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
 		8F185B7112EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
-		8F36E482137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */; };
-		8F36E483137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */; };
 		8F36E4A4137DE6C90036A1AB /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A3137DE6C90036A1AB /* CinderApp.icns */; };
 		8F36E4A5137DE6C90036A1AB /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A3137DE6C90036A1AB /* CinderApp.icns */; };
 		8F36E4A9137DE7B20036A1AB /* skinning_config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A8137DE7B20036A1AB /* skinning_config.xml */; };
@@ -55,12 +53,16 @@
 		8F36E4CF137DE8420036A1AB /* sinbad_clothes.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */; };
 		8F36E4D0137DE8420036A1AB /* sinbad_sword.tga in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */; };
 		8F36E4D1137DE8420036A1AB /* Sinbad.fbx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F36E4BE137DE8020036A1AB /* Sinbad.fbx */; };
-		8F36E58B137DEE0F0036A1AB /* Common.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E58A137DEE0F0036A1AB /* Common.cxx */; };
-		8F36E58C137DEE0F0036A1AB /* Common.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 8F36E58A137DEE0F0036A1AB /* Common.cxx */; };
 		8F36E59A137DEE340036A1AB /* libfbxsdk_20113.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
 		8F36E59B137DEE3B0036A1AB /* libfbxsdk_20113.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
 		8F727E2D12E0BC7E00EBCA42 /* Skinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */; };
 		8F727E3012E0BC7E00EBCA42 /* Skinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */; };
+		8FD1936713A2241B00342024 /* Common.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 8FD1936413A2241B00342024 /* Common.cxx */; };
+		8FD1936813A2241B00342024 /* S9FbxDrawer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8FD1936513A2241B00342024 /* S9FbxDrawer.cpp */; };
+		8FD1936913A2241B00342024 /* S9FbxLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8FD1936613A2241B00342024 /* S9FbxLoader.cpp */; };
+		8FD1936A13A2241B00342024 /* Common.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 8FD1936413A2241B00342024 /* Common.cxx */; };
+		8FD1936B13A2241B00342024 /* S9FbxDrawer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8FD1936513A2241B00342024 /* S9FbxDrawer.cpp */; };
+		8FD1936C13A2241B00342024 /* S9FbxLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8FD1936613A2241B00342024 /* S9FbxLoader.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -136,16 +138,18 @@
 		8F36627312E0E0DC00FB5340 /* Skinning.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Skinning.h; path = include/Skinning.h; sourceTree = "<group>"; };
 		8F36E47F137DE6710036A1AB /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Common.h; path = ../../../include/Common.h; sourceTree = SOURCE_ROOT; };
 		8F36E480137DE6710036A1AB /* S9FbxLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = S9FbxLoader.h; path = ../../../include/S9FbxLoader.h; sourceTree = SOURCE_ROOT; };
-		8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = S9FbxLoader.cpp; path = src/S9FbxLoader.cpp; sourceTree = "<group>"; };
 		8F36E4A3137DE6C90036A1AB /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = CinderApp.icns; sourceTree = "<group>"; };
 		8F36E4A8137DE7B20036A1AB /* skinning_config.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = skinning_config.xml; path = resources/skinning_config.xml; sourceTree = "<group>"; };
 		8F36E4BB137DE8020036A1AB /* sinbad_body.tga */ = {isa = PBXFileReference; lastKnownFileType = file; name = sinbad_body.tga; path = resources/sinbad_body.tga; sourceTree = "<group>"; };
 		8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */ = {isa = PBXFileReference; lastKnownFileType = file; name = sinbad_clothes.tga; path = resources/sinbad_clothes.tga; sourceTree = "<group>"; };
 		8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */ = {isa = PBXFileReference; lastKnownFileType = file; name = sinbad_sword.tga; path = resources/sinbad_sword.tga; sourceTree = "<group>"; };
 		8F36E4BE137DE8020036A1AB /* Sinbad.fbx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Sinbad.fbx; path = resources/Sinbad.fbx; sourceTree = "<group>"; };
-		8F36E58A137DEE0F0036A1AB /* Common.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cxx; sourceTree = "<group>"; };
 		8F727E2412E0BC7100EBCA42 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = include/config.h; sourceTree = "<group>"; };
 		8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Skinning.cpp; path = src/Skinning.cpp; sourceTree = "<group>"; };
+		8FD1936313A2240E00342024 /* S9FbxDrawer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = S9FbxDrawer.h; path = ../../../include/S9FbxDrawer.h; sourceTree = SOURCE_ROOT; };
+		8FD1936413A2241B00342024 /* Common.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Common.cxx; path = ../../../src/Common.cxx; sourceTree = SOURCE_ROOT; };
+		8FD1936513A2241B00342024 /* S9FbxDrawer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = S9FbxDrawer.cpp; path = ../../../src/S9FbxDrawer.cpp; sourceTree = SOURCE_ROOT; };
+		8FD1936613A2241B00342024 /* S9FbxLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = S9FbxLoader.cpp; path = ../../../src/S9FbxLoader.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,8 +197,6 @@
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				8F36E58A137DEE0F0036A1AB /* Common.cxx */,
-				8F36E481137DE67B0036A1AB /* S9FbxLoader.cpp */,
 				8F727E2A12E0BC7E00EBCA42 /* Skinning.cpp */,
 			);
 			name = Source;
@@ -241,6 +243,7 @@
 		29B97314FDCFA39411CA2CEA /* ShadowVolumes */ = {
 			isa = PBXGroup;
 			children = (
+				8FBA008F13A2221A00BB7DE6 /* S9FBX */,
 				8F10D9F612A7BC2600C3172C /* Include */,
 				080E96DDFE201D6D7F000001 /* Source */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
@@ -281,8 +284,6 @@
 		8F10D9F612A7BC2600C3172C /* Include */ = {
 			isa = PBXGroup;
 			children = (
-				8F36E47F137DE6710036A1AB /* Common.h */,
-				8F36E480137DE6710036A1AB /* S9FbxLoader.h */,
 				8F36627312E0E0DC00FB5340 /* Skinning.h */,
 				8F727E2412E0BC7100EBCA42 /* config.h */,
 			);
@@ -298,6 +299,19 @@
 				8F36E4BE137DE8020036A1AB /* Sinbad.fbx */,
 			);
 			name = Sinbad;
+			sourceTree = "<group>";
+		};
+		8FBA008F13A2221A00BB7DE6 /* S9FBX */ = {
+			isa = PBXGroup;
+			children = (
+				8FD1936413A2241B00342024 /* Common.cxx */,
+				8FD1936513A2241B00342024 /* S9FbxDrawer.cpp */,
+				8FD1936613A2241B00342024 /* S9FbxLoader.cpp */,
+				8FD1936313A2240E00342024 /* S9FbxDrawer.h */,
+				8F36E47F137DE6710036A1AB /* Common.h */,
+				8F36E480137DE6710036A1AB /* S9FbxLoader.h */,
+			);
+			name = S9FBX;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -406,8 +420,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				8F727E3012E0BC7E00EBCA42 /* Skinning.cpp in Sources */,
-				8F36E482137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */,
-				8F36E58B137DEE0F0036A1AB /* Common.cxx in Sources */,
+				8FD1936713A2241B00342024 /* Common.cxx in Sources */,
+				8FD1936813A2241B00342024 /* S9FbxDrawer.cpp in Sources */,
+				8FD1936913A2241B00342024 /* S9FbxLoader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,8 +431,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				8F727E2D12E0BC7E00EBCA42 /* Skinning.cpp in Sources */,
-				8F36E483137DE67B0036A1AB /* S9FbxLoader.cpp in Sources */,
-				8F36E58C137DEE0F0036A1AB /* Common.cxx in Sources */,
+				8FD1936A13A2241B00342024 /* Common.cxx in Sources */,
+				8FD1936B13A2241B00342024 /* S9FbxDrawer.cpp in Sources */,
+				8FD1936C13A2241B00342024 /* S9FbxLoader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

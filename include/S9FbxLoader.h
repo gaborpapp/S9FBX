@@ -1,15 +1,15 @@
 /*
- __  .__              ________ 
- ______ ____   _____/  |_|__| ____   ____/   __   \
- /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
- \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
+                       __  .__              ________ 
+   ______ ____   _____/  |_|__| ____   ____/   __   \
+  /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
+  \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
  /____  >\___  >\___  >__| |__|\____/|___|  //____/  .co.uk
- \/     \/     \/                    \/         
+      \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
  
  
- S9FbxLoader.h | Part of Skinning | Created 03/02/2011
+ S9FbxLoader.h | Part of S9FBX | Created 03/02/2011
  
  Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
  *** Section9 ***
@@ -40,7 +40,7 @@
  *
  * ***********************************************************************/
 
-/* Based on the work by anthonyScavarelli on 11-01-04 and myself */
+/* Based on the work by Anthony Scavarelli on 11-01-04 and myself */
 
 /* http://forum.libcinder.org/topic/fbx-models-in-cinder */
 /* http://area.autodesk.com/forum/autodesk-fbx/fbx-sdk/help-with-skeletal-animation--bone-data/ */
@@ -56,126 +56,156 @@
 #include "cinder/Utilities.h"
 
 #include <fbxsdk.h>
+#include <list>
 #include "Common.h"
 
 using namespace std;
 using namespace cinder;
 using namespace ci;
 
+namespace S9 {
 	
-typedef enum {
-	FBX_DRAW_WIREFRAME,
-	FBX_DRAW_FILLED,
-	FBX_DRAW_TEXTURED,
 	
-} FbxDrawMethod;
+	class FbxRotation{
+	public:
+		
+		Matrix44f				baseMatrix;
+		shared_ptr<Matrix44f>	realMatrix;	// Shared pointer here too keeps the right matrix in the right place
+		Matrix44f				rotMatrix;
+		
+		shared_ptr<FbxRotation>	parent;
+		bool					targeted;
+		
+	};
+	
+	class FbxCluster {
+		
+	public:
+		Matrix44f					pretransform;	// For skinning with bones, our matrix comes inbetween
+		Matrix44f					posttransform;
+		shared_ptr<Matrix44f>		transform;
+		
+		KFbxCluster::ELinkMode		mode;
+		
+		shared_ptr<FbxRotation>		bone;
+		vector<int>					indicies;
+		vector<float>				weights;
+		
+		// Extents of this cluster
+		Vec3f mMax;
+		Vec3f mMin;
+		Vec3f mCentre;	
+		
+	};
+	
+	
+	class FbxMaterial {
+	public:
+		ci::Vec3f		colour;
+		gl::Texture		tex;	// Set as a reference to the other textures in our internal struct
+		bool			isTextured;
+		
+	};
+	
+	
+	// Hold in a structure so we don't recurse. Gives us nice vectors/ arrays and indicies.
+	
+	class FbxMesh {
+		
+	public:
+		vector<Vec3f>		vertices;
+		vector<Vec3f>		skinvertices;
+		vector<float>		skinweights;
+		vector<Matrix44f>	skinmatrices;
+		
+		float*				floats;
+	
+		vector<Vec3f>		normals;
+		vector<Vec2f>		texcoords;
+		vector<int>			indicies;		// Maybe need a long for that?
+		vector<int>			matindicies;	// per triangle! (we assume triangles here)
+	
+		ci::Matrix44f		offset;
+		int					numtris;
+		int					numverts;
+		
+		vector< shared_ptr<FbxCluster> > clusters;
+		vector< shared_ptr<FbxRotation> > bones;
+		
+		// Extents of this Mesh
+		Vec3f mMax;
+		Vec3f mMin;
+		
+		bool applyMatrices;
+		
+	};
+	
+	// Potentially, there could be many meshes in this FBX :S
+	
+	class FbxDrawable {
+	public:
+		
+		virtual ~FbxDrawable();
+		
+		vector< shared_ptr<FbxMesh> > meshes;
+		vector< shared_ptr<FbxMaterial> > materials;
+		map<std::string, gl::Texture>	mMapToTex;
+		
+	};
+	
+	
+	class S9FbxLoader {
+		
+		// TODO - This should be a factory for churning out CinderModels or something
+		
+	public:
+		
+		S9FbxLoader();
+		shared_ptr<FbxDrawable> load(string fileName);
+		virtual ~S9FbxLoader();
+		bool	isApplyMatrices() {return mApplyMatrices;};
 
-typedef struct {
-	KFbxXMatrix matrix;
-	KFbxXMatrix rmatrix;
-	KFbxNode	*node;
-	bool		targeted;
-	ci::Matrix44f	cindermatrix;	// We are doing comparisions so we dont want to loose precision
-	// when we compare matrices
+		ci::Matrix44f	getGlobalOffset();
+		
+	protected:
+		
+		// Triangulate Recursive Functions
+		void triangulateScene(KFbxSdkManager* pSdkManager, KFbxScene* pScene);
+		void triangulateNode(KFbxSdkManager* pSdkManager, KFbxNode* pNode);
+		void triangulateNodeRecursive(KFbxSdkManager* pSdkManager, KFbxNode* pNode);
+		
+		// Setup for Cinder Functions
+		
+		void setupForCinder(shared_ptr<FbxDrawable>  pDrawable);
+		void setupForCinderRecursive(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition);
+		void setupForCinderSkeleton(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition);
+		void setupForCinderMesh(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition,  shared_ptr<FbxMesh> pMesh);
+		void setupForCinderDeformations(shared_ptr<FbxDrawable>  pDrawable,KFbxXMatrix& pGlobalPosition,  KFbxMesh* pMesh, shared_ptr<FbxMesh> pCinderMesh); 
+		
+		// texture and materials
+		void loadSupportedMaterials(shared_ptr<FbxDrawable>  pDrawable);
+		void loadSupportedMaterialsRecursive(KFbxNode* pNode, shared_ptr<FbxDrawable>  pDrawable);
+		gl::Texture loadTexture(KFbxTexture* pTexture, shared_ptr<FbxDrawable>  pDrawable);
+					
+		
+		KArrayTemplate<gl::Texture>		mTextureArray;
 	
-}FbxRotation;
-
-typedef struct {
-	ci::Vec3f		colour;
-	gl::Texture		tex;	// Set as a reference to the other textures in our internal struct
-	bool			isTextured;
+		// Cinder Related
+		ci::Matrix44f				toCinderMatrix(KFbxXMatrix m);
+		KFbxXMatrix					toFBXMatrix(ci::Matrix44f  m);
+		
+		string			mFileName;
+		string			mPath;
+		
+		bool			mApplyMatrices;
+		
+		KFbxSdkManager* mSdkManager;
+		KFbxImporter*	mImporter;
+		KFbxScene*		mScene;
+		
+		
+		KTime mPeriod, mStart, mStop, mCurrentTime; // TODO - Not used yet but will be for animation
 	
-}FbxMaterial;
-
-
-class S9FbxLoader {
+	};
 	
-public:
-	
-	S9FbxLoader();
-	bool load(string fileName);
-	virtual ~S9FbxLoader();
-	void			draw();
-	void			rotateBone(int boneid, ci::Matrix44f &mat); 
-	void			resetRotations();
-	
-	bool			bruteForceCollision(Vec3f p, float r);
-	
-	Vec3f			getBoneVector(int boneid);
-	ci::Matrix44f	getCinderMatrix(int boneid);
-	FbxRotation		getCustomRotation(int idx);
-	int				getCustomRotation(KFbxNode *pNode);
-	
-	FbxDrawMethod	mDrawMethod;
-	bool			mDrawBones;
-	
-protected:
-	
-	// Triangulate Recursive Functions
-	void triangulateScene(KFbxSdkManager* pSdkManager, KFbxScene* pScene);
-	void triangulateNode(KFbxSdkManager* pSdkManager, KFbxNode* pNode);
-	void triangulateNodeRecursive(KFbxSdkManager* pSdkManager, KFbxNode* pNode);
-	
-	
-	// Drawing functions
-	void drawNodeRecursive(KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition, int lvl);
-	void drawNode(KFbxNode* pNode,  KFbxXMatrix& pParentGlobalPosition, KFbxXMatrix& pGlobalPosition);
-	void drawMesh(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition);
-	
-	
-	void drawSkeleton(KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition, KFbxXMatrix& pGlobalPosition);
-	
-	void drawMeshGLWire(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray);
-	void drawMeshGLSolid(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray);
-	void drawMeshGLTex(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray);
-	void drawMeshExtents(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray);
-	
-	// Deformation
-	void computeClusterDeformation(KFbxXMatrix& pGlobalPosition,  KFbxMesh* pMesh,  KFbxVector4* pVertexArray);
-	void setupBones();
-	void rotateBoneRecursive(KFbxNode *pNode, KFbxXMatrix mat, KFbxXMatrix rmat);
-	
-	// Misc
-	void setupInternalRefs(KFbxNode* pNode);
-	void preparePointCacheData(KFbxScene* pScene);
-	void readVertexCacheData(KFbxMesh* pMesh, KFbxVector4* pVertexArray);
-	
-	// texture and materials
-	void loadSupportedMaterials();
-	void loadSupportedMaterialsRecursive(KFbxNode* pNode);
-	gl::Texture loadTexture(KFbxTexture* pTexture);
-	
-	// Collision Detection
-	int meshCollision(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, Vec3f p, float r);
-	int collisionRecursive(KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition, int lvl, Vec3f p, float r);
-	
-	// Cinder Related
-	ci::Matrix44f					toCinderMatrix(KFbxXMatrix m);
-	KFbxXMatrix						toFBXMatrix(ci::Matrix44f  m);
-	
-	
-	// Texture Related
-	KArrayTemplate<gl::Texture>		mTextureArray;
-	map<std::string, gl::Texture>	mMapToTex;	// Mapping from Cinder tex to FBX Texture for lookups - TODO Still needed?
-	vector<FbxMaterial>				mMaterials;
-	
-	string			mFileName;
-	string			mPath;
-	
-	KFbxSdkManager* mSdkManager;
-	KFbxImporter*	mImporter;
-	KFbxScene*		mScene;
-	KFbxMesh*		mMesh;
-	
-	int				mPoseIndex;
-	
-	KTime mPeriod, mStart, mStop, mCurrentTime; // TODO - Not used yet but will be for animation
-	
-	vector<FbxRotation> mBones;
-	
-	// Extents of this model
-	double mMaxX,mMaxY,mMaxZ;
-	double mMinX,mMinY,mMinZ;
-	
-};
-	
+} // End Namespace S9

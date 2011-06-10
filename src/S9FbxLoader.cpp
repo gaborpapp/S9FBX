@@ -9,7 +9,7 @@
  THE GHOST IN THE CSH
  
  
- S9FbxLoader.cpp | Part of Canned | Created 03/02/2011
+ S9FbxLoader.cpp | Part of S9FBX | Created 03/02/2011
  
  Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
  *** Section9 ***
@@ -47,17 +47,29 @@ namespace S9{
 	
 #pragma mark setup and destroy functions
 	
+	
+	FbxDrawable::~FbxDrawable() {
+		
+		meshes.clear();
+		materials.clear();
+		mMapToTex.clear();
+	
+	}
+	
+	
+	
 	S9FbxLoader::S9FbxLoader() {
 		mCurrentTime = 0; // TODO - should be set to start when animation is done
-		mDrawMethod = FBX_DRAW_TEXTURED;
-		mDrawBones = false;
+		mApplyMatrices = true;
 	}
 	
 	S9FbxLoader::~S9FbxLoader() {
 	}
 	
-	bool S9FbxLoader::load(string fileName){
+	shared_ptr<FbxDrawable> S9FbxLoader::load(string fileName){
 		
+
+		shared_ptr<FbxDrawable> drawable(new FbxDrawable());
 		
 		mFileName = fileName.substr(fileName.find_last_of("/") + 1); // Guess is linux / mac only then!
 		mPath = fileName.substr(0, fileName.find_last_of("/") ); 
@@ -74,7 +86,7 @@ namespace S9{
 			
 			// Initialize the importer by providing a filename.
 			if(mImporter->Initialize(fileName.c_str(), lFileFormat) == true) {
-				app::console() << "Importing FBX file " << fileName << endl;
+				app::console() << "S9FBXLoader - Importing FBX file " << fileName << endl;
 				
 				// Make sure that the scene is ready to load.
 				
@@ -95,48 +107,31 @@ namespace S9{
 						OurSystemUnit.ConvertScene(mScene);
 					}
 					
-					
 					triangulateScene(mSdkManager, mScene);
-					
-					preparePointCacheData(mScene);
-					
-					setupInternalRefs(mScene->GetRootNode());
-					
-					setupBones();
-					
-					loadSupportedMaterials();
+					loadSupportedMaterials(drawable);
+					setupForCinder(drawable);
 					
 					// TODO - animation and poses from the previous example need to be here
-					
-					
-					// Initialize the frame period.
-					
+			
 				}
 				else{
-					app::console() << "Unable to import file " << endl;
-					return false;
+					app::console() << "S9FBXLoader - Unable to import file " << endl;
 				}
-				
-				mImporter->Destroy();
-				
-				
+			
 			}
 			else{
-				app::console() << "Unable to open file " << mImporter->GetLastErrorString();
-				return false;
+				app::console() << "S9FBXLoader - Unable to open file " << mImporter->GetLastErrorString();
 			}
 		}
 		else{
-			app::console() << "Unable to create the FBX SDK manager"  << endl;
-			return false;
+			app::console() << "S9FBXLoader - Unable to create the FBX SDK manager"  << endl;
 		}
 		
 		// When mPoseIndex is not -1, draw the scene at that pose
 		// TODO - Multiple pose support
-		mPoseIndex = -1;
+		mImporter->Destroy();
 		
-		return true;
-		
+		return drawable;
 	}
 	
 	
@@ -188,597 +183,234 @@ namespace S9{
 	}
 	
 	
-#pragma mark drawing methods
+#pragma mark Cinder Structure Creation Methods
 	
 	// ********************************************************************************
-	// DRAWING Methods
-	// ********************************************************************************
+	// Cinder Structure Methods
+	// ********************************************************************************	
 	
-	void S9FbxLoader::draw() {
-		
+	// TODO - Basically, being recursive is probably not the best thing to do. Im thinking
+	// create what we need in memory and ditch the rest. We need to get the vertices and 
+	// what not out in arrays anyway so we can use VBOs and shaders for skinning and for
+	// bullet physics
+
+	void S9FbxLoader::setupForCinder(shared_ptr<FbxDrawable>  pDrawable) {
 		KFbxXMatrix lDummyGlobalPosition;
-		
+
 		int i, lCount = mScene->GetRootNode()->GetChildCount();
 		
 		for (i = 0; i < lCount; i++){
-			drawNodeRecursive(mScene->GetRootNode()->GetChild(i), lDummyGlobalPosition,1);
-		}
-		
-	}
-	
-	void S9FbxLoader::drawNodeRecursive(KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition, int lvl) {
-		
-		KFbxXMatrix lGlobalPosition = GetGlobalPosition(pNode, mCurrentTime, &pParentGlobalPosition);
-		KFbxXMatrix lGeometryOffset = GetGeometry(pNode);
-		KFbxXMatrix lGlobalOffPosition = lGlobalPosition * lGeometryOffset;	
-		
-		drawNode(pNode, pParentGlobalPosition, lGlobalOffPosition);
-		
-		int i, lCount = pNode->GetChildCount();
-		
-		for (i = 0; i < lCount; i++){
-			drawNodeRecursive(pNode->GetChild(i), lGlobalPosition,lvl+1);
+			setupForCinderRecursive(pDrawable, mScene->GetRootNode()->GetChild(i), lDummyGlobalPosition);
 		}
 	}
 	
 	
-	// Draw the node following the content of it's node attribute.
-	// TODO - This did have a POSE option passed to it but it doesnt at the moment
-	
-	void S9FbxLoader::drawNode(KFbxNode* pNode,  KFbxXMatrix& pParentGlobalPosition, KFbxXMatrix& pGlobalPosition) {
+	void S9FbxLoader::setupForCinderRecursive(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition) {
+		
+		KFbxXMatrix globalPosition = GetGlobalPosition(pNode, mCurrentTime, &pParentGlobalPosition);
+		KFbxXMatrix geometryOffset = GetGeometry(pNode);
+		KFbxXMatrix globalOffPosition = globalPosition * geometryOffset;	
+		
+		// Pull out the Mesh and create some triangles
 		KFbxNodeAttribute* lNodeAttribute = pNode->GetNodeAttribute();
 		
 		if (lNodeAttribute) {
 			
 			if (lNodeAttribute->GetAttributeType() == KFbxNodeAttribute::eMESH) {
-				drawMesh(pNode, pGlobalPosition);
+				
+				// Create a new Cinder Mesh
+				shared_ptr<FbxMesh> pMesh(new FbxMesh());
+				pDrawable->meshes.push_back(pMesh);
+				pMesh->applyMatrices = isApplyMatrices();
+				
+				pMesh->mMin.x = pMesh->mMin.y = pMesh->mMin.z = 10000000.0;
+				pMesh->mMax.x = pMesh->mMax.y = pMesh->mMax.z = -10000000.0;
+				
+				setupForCinderMesh(pDrawable, pNode,globalPosition, pMesh);
+				setupForCinderDeformations(pDrawable, globalPosition,(KFbxMesh*)lNodeAttribute,pMesh);
+			
+				
+			} else if (lNodeAttribute->GetAttributeType() == KFbxNodeAttribute::eSKELETON){
+				setupForCinderSkeleton(pDrawable, pNode,globalPosition);
 			}
-			else if (lNodeAttribute->GetAttributeType() == KFbxNodeAttribute::eSKELETON && mDrawBones)
-			{
-				drawSkeleton(pNode, pParentGlobalPosition, pGlobalPosition);
-			}
+		}
+		
+			
+		int i, lCount = pNode->GetChildCount();
+		for (i = 0; i < lCount; i++){
+			setupForCinderRecursive(pDrawable, pNode->GetChild(i), globalPosition);
 		}
 	}
 	
 	
-	void S9FbxLoader::drawMesh(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition) {
-		KFbxMesh* lMesh = (KFbxMesh*) pNode->GetNodeAttribute();
+	void S9FbxLoader::setupForCinderMesh(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, shared_ptr<FbxMesh> pMesh){
 		
-		int lClusterCount = 0;
-		int lSkinCount= 0;
-		int lVertexCount = lMesh->GetControlPointsCount();
+		// Setup a Mesh - ASSUMING TRIANGLES ONLY! (for now!)
+		
+		KFbxMesh* lMesh = (KFbxMesh*) pNode->GetNodeAttribute();
+		pMesh->offset = toCinderMatrix(pGlobalPosition); 
+		
+		int vertexCount = lMesh->GetControlPointsCount();
 		
 		// No vertex to draw.
-		if (lVertexCount == 0)
-			return;
+		if (vertexCount != 0) {
+			
+			int polygonCount = lMesh->GetPolygonCount();
+			int indiciesCount = lMesh->GetPolygonVertexCount();
+			
+			// Setup the Mesh Containers - Populate so we can assign
+			
+			pMesh->indicies.reserve(indiciesCount);
+			pMesh->vertices.reserve(vertexCount);
+			pMesh->texcoords.reserve(vertexCount);
+			pMesh->normals.reserve(vertexCount);
+			
+			pMesh->numtris = polygonCount;
+			pMesh->numverts = vertexCount;
+			
 		
-		// Create a copy of the vertex array to receive vertex deformations.
-		KFbxVector4* lVertexArray = new KFbxVector4[lVertexCount];
-		memcpy(lVertexArray, lMesh->GetControlPoints(), lVertexCount * sizeof(KFbxVector4));
-		
-		// Active vertex cache deformer will overwrite any other deformer
-		if (lMesh->GetDeformerCount(KFbxDeformer::eVERTEX_CACHE) &&
-			(static_cast<KFbxVertexCacheDeformer*>(lMesh->GetDeformer(0, KFbxDeformer::eVERTEX_CACHE)))->IsActive())
-		{
-			readVertexCacheData(lMesh, lVertexArray);
-		}
-		else
-		{
-			
-			// TODO - This is probably not needed for our simple mesh
-			/*   if (lMesh->GetShapeCount()){
-			 computeShapeDeformation(pNode, lMesh, pTime, lVertexArray);
-			 }*/
-			
-			
-			lSkinCount = lMesh->GetDeformerCount(KFbxDeformer::eSKIN);
-			for( int i=0; i< lSkinCount; i++)
-				lClusterCount += ((KFbxSkin *)(lMesh->GetDeformer(i, KFbxDeformer::eSKIN)))->GetClusterCount();
-			
-			if (lClusterCount){
-				computeClusterDeformation(pGlobalPosition, lMesh, lVertexArray);
+			// Indicies
+			int* pindices = lMesh->GetPolygonVertices();
+			for (int i =0; i < indiciesCount; ++i){
+				pMesh->indicies.push_back(pindices[i]);
 			}
-		}
-		switch (mDrawMethod) {
-			case FBX_DRAW_TEXTURED:
-				drawMeshGLTex(pNode, pGlobalPosition, lMesh, lVertexArray);
-				break;
-			case FBX_DRAW_FILLED:
-				drawMeshGLSolid(pNode, pGlobalPosition, lMesh, lVertexArray);
-				break;
-			case FBX_DRAW_WIREFRAME:
-				drawMeshGLWire(pNode, pGlobalPosition, lMesh, lVertexArray);
-				drawMeshExtents(pNode, pGlobalPosition, lMesh, lVertexArray);
-				break;
-			default:
-				break;
-		}    
-		
-		delete [] lVertexArray;
-	}
-	
-	
-#pragma mark Draw MeshGL Wireframe
-	
-	void S9FbxLoader::drawMeshGLWire(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray)
-	{	
-		
-		//get normals
-		KFbxLayerElementArrayTemplate<KFbxVector4> *lNormals = NULL;
-		bool normalStatus = pMesh->GetNormals(&lNormals);
-		
-		glPushMatrix();
-		glMultMatrixd((double*) pGlobalPosition);
-		
-		int lPolygonIndex;
-		int lPolygonCount = pMesh->GetPolygonCount();
-		
-		for (lPolygonIndex = 0; lPolygonIndex < lPolygonCount; lPolygonIndex++) {
 			
-			glColor3f(0,0,0);
+		
+			// Vertices (and a copy of skinned vertices and matrices as well)
 			
-			int lVerticeIndex;
-			int lVerticeCount = pMesh->GetPolygonSize(lPolygonIndex);
+			bool sv = lMesh->GetDeformerCount(KFbxDeformer::eSKIN) > 0;
+			if (sv) {
+				pMesh->skinvertices.reserve(vertexCount);
+				pMesh->skinmatrices.reserve(vertexCount);
+			}
 			
-			glLineWidth(1.0f);
+			KFbxVector4* pvertices = lMesh->GetControlPoints();
 			
-			glBegin(GL_LINE_LOOP);
+			pMesh->floats = new float[vertexCount * 3];
 			
-			for (lVerticeIndex = 0; lVerticeIndex < lVerticeCount; lVerticeIndex++){
+			for (int i =0; i < vertexCount; ++i){
 				
-				if ( /*normalStatus &&*/ lNormals /*&& lNormals->GetCount() == lControlPointsCount*/) {
-					//GetPolygonVertexNormal(int pPolyIndex, int pVertexIndex, KFbxVector4 &pNormal)
-					KFbxVector4 pNormal;
-					pMesh->GetPolygonVertexNormal(lPolygonIndex, lVerticeIndex, pNormal);
-					
-					//printf("normals!");
-					glNormal3d(pNormal[0], pNormal[1] /* * -1.0 */, pNormal[2]);
-					//					glNormal3d(lNormals->GetAt(lCurrentUVIndex)[0], lNormals->GetAt(lCurrentUVIndex)[1], lNormals->GetAt(lCurrentUVIndex)[2]);
+				Vec3f vert = Vec3f(pvertices[i][0],pvertices[i][1],pvertices[i][2]);
+				
+				// Set min and max values
+				if ( vert.x < pMesh->mMin.x) pMesh->mMin.x = vert.x;
+				if ( vert.y < pMesh->mMin.y) pMesh->mMin.y = vert.y;
+				if ( vert.z < pMesh->mMin.z) pMesh->mMin.z = vert.z;
+				
+				if ( vert.x > pMesh->mMax.x) pMesh->mMax.x = vert.x;
+				if ( vert.y > pMesh->mMax.y) pMesh->mMax.y = vert.y;
+				if ( vert.z > pMesh->mMax.z) pMesh->mMax.z = vert.z;
+				
+				
+				if (mApplyMatrices)
+					vert = pMesh->offset * vert;
+	
+				pMesh->vertices.push_back( vert ) ;
+				
+				
+		
+				if (sv) {
+					pMesh->skinvertices.push_back( vert ) ;
+					Matrix44f m(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0); // If we arent using additive or total in FBX Matrices
+					pMesh->skinmatrices.push_back(m);
+					pMesh->skinweights.push_back(0.0);
 				}
-				
-				glVertex3dv((GLdouble *)pVertexArray[pMesh->GetPolygonVertex(lPolygonIndex, lVerticeIndex)]);
 			}
-			glEnd();		
-		}
-		glPopMatrix();
-	}
-	
-	
-#pragma mark Draw MeshGL Extents
-	
-	void S9FbxLoader::drawMeshExtents(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray)
-	{			
-		int lPolygonIndex;
-		int lPolygonCount = pMesh->GetPolygonCount();
-	
-		mMaxX = mMaxY = mMaxZ = 0.0;
-		mMinX = mMinY = mMinZ = 10000.0;
-		
-		for (lPolygonIndex = 0; lPolygonIndex < lPolygonCount; lPolygonIndex++) {
 			
-			int lVerticeIndex;
-			int lVerticeCount = pMesh->GetPolygonSize(lPolygonIndex);
 			
-			for (lVerticeIndex = 0; lVerticeIndex < lVerticeCount; lVerticeIndex++){
-				
-				KFbxVector4 pv = pVertexArray[pMesh->GetPolygonVertex(lPolygonIndex, lVerticeIndex)];
-				mMaxX = pv[0] > mMaxX ? pv[0] : mMaxX;
-				mMaxY = pv[1] > mMaxY ? pv[1] : mMaxY;
-				mMaxZ = pv[2] > mMaxZ ? pv[2] : mMaxZ;
-				
-				mMinX = pv[0] < mMinX ? pv[0] : mMinX;
-				mMinY = pv[1] < mMinY ? pv[1] : mMinY;
-				mMinZ = pv[2] < mMinZ ? pv[2] : mMinZ;
-				
+			// Normals
+			
+			KFbxLayerElementArrayTemplate<KFbxVector4> *lNormals = NULL;
+			bool normalStatus = lMesh->GetNormals(&lNormals);
+			if (normalStatus) {
+				for (int i =0; i < vertexCount; ++i){
+					
+					Vec3f norm (lNormals->GetAt(i)[0],lNormals->GetAt(i)[1],lNormals->GetAt(i)[2]);
+					
+					if (mApplyMatrices)
+						norm = pMesh->offset * norm;
+					
+					pMesh->normals.push_back( norm ) ;
+				}
 			}
-		}
 		
+			// Textures
 		
-		glColor3f(1,0,1);
-		glLineWidth(3.0f);
-		glPushMatrix();
-		glMultMatrixd((double*) pGlobalPosition);
-		
-		glBegin(GL_LINES);
-		
-		// Top
-		glVertex3f(mMinX, mMaxY, mMinZ); glVertex3f(mMaxX, mMaxY, mMinZ);
-		glVertex3f(mMaxX, mMaxY, mMinZ); glVertex3f(mMaxX, mMaxY, mMaxZ);
-		glVertex3f(mMaxX, mMaxY, mMaxZ); glVertex3f(mMinX, mMaxY, mMaxZ);
-		glVertex3f(mMinX, mMaxY, mMaxZ); glVertex3f(mMinX, mMaxY, mMinZ);
-		
-		
-		// Bottom
-		
-		glVertex3f(mMinX, mMinY, mMinZ); glVertex3f(mMaxX, mMinY, mMinZ);
-		glVertex3f(mMaxX, mMinY, mMinZ); glVertex3f(mMaxX, mMinY, mMaxZ);
-		glVertex3f(mMaxX, mMinY, mMaxZ); glVertex3f(mMinX, mMinY, mMaxZ);
-		glVertex3f(mMinX, mMinY, mMaxZ); glVertex3f(mMinX, mMinY, mMinZ);
-		
-		
-		// Front
-		glVertex3f(mMinX, mMaxY, mMaxZ); glVertex3f(mMinX, mMinY, mMaxZ);
-		glVertex3f(mMaxX, mMaxY, mMaxZ); glVertex3f(mMaxX, mMinY, mMaxZ);
-		
-		// Back
-		glVertex3f(mMinX, mMaxY, mMinZ); glVertex3f(mMinX, mMinY, mMinZ);
-		glVertex3f(mMaxX, mMaxY, mMinZ); glVertex3f(mMaxX, mMinY, mMinZ);
-		
-		
-		glEnd();
-		
-		glPopMatrix();
-	}
-	
-	
-	
-#pragma mark Draw MeshGL Solid
-	
-	
-	void S9FbxLoader::drawMeshGLSolid(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray)
-	{	
-		
-		//get normals
-		KFbxLayerElementArrayTemplate<KFbxVector4> *lNormals = NULL;
-		bool normalStatus = pMesh->GetNormals(&lNormals);
-		
-		
-		glPushMatrix();
-		glMultMatrixd((double*) pGlobalPosition);
-		
-		int lPolygonIndex;
-		int lPolygonCount = pMesh->GetPolygonCount();
-		
-		for (lPolygonIndex = 0; lPolygonIndex < lPolygonCount; lPolygonIndex++) {
-			
-			int lMatId = -1;
 			KFbxLayerElement::EMappingMode lMappingMode = KFbxLayerElement::eNONE;
 			KFbxLayerElementArrayTemplate<KFbxVector2>* lUVArray = NULL;
-			pMesh->GetTextureUV(&lUVArray, KFbxLayerElement::eDIFFUSE_TEXTURES);
+			lMesh->GetTextureUV(&lUVArray, KFbxLayerElement::eDIFFUSE_TEXTURES);
 			
-			for (int l = 0; l < pMesh->GetLayerCount(); l++) {
-				KFbxLayerElementMaterial* lLayerMaterial = pMesh->GetLayer(l)->GetMaterials();
-				if (lLayerMaterial) {
+			for (int i =0; i < vertexCount; ++i){
+				pMesh->texcoords.push_back( Vec2f(0,0) ) ;
+			}
+			
+			
+			for (int i = 0; i < polygonCount; ++i) {
+				
+				// Materials - Per Triangle
+				
+				for (int l = 0; l < lMesh->GetLayerCount(); l++) {
+					KFbxLayerElementMaterial* lLayerMaterial = lMesh->GetLayer(l)->GetMaterials();
+					if (lLayerMaterial) {
+						pNode->GetMaterial(lLayerMaterial->GetIndexArray().GetAt(l));
+						pMesh->matindicies.push_back(lLayerMaterial->GetIndexArray().GetAt(i));
+					}
+				}
+				
+				for (int j = 0; j < 3; j++){
 					
-					KFbxSurfaceMaterial* lMaterial = NULL;
-					pNode->GetMaterial(lLayerMaterial->GetIndexArray().GetAt(l));
-					lMatId = lLayerMaterial->GetIndexArray().GetAt(lPolygonIndex);
-				}
-			}
-			
-			if (lMatId >=0) {
-				glColor3f(mMaterials[lMatId].colour.x, mMaterials[lMatId].colour.y,mMaterials[lMatId].colour.z);
-			}
-			
-			int lVerticeIndex;
-			int lVerticeCount = pMesh->GetPolygonSize(lPolygonIndex);
-			
-			
-			glBegin(GL_TRIANGLES);
-			
-			for (lVerticeIndex = 0; lVerticeIndex < lVerticeCount; lVerticeIndex++){
-				int lCurrentUVIndex;
-				
-				if (lMappingMode == KFbxLayerElement::eBY_POLYGON_VERTEX){
-					lCurrentUVIndex = pMesh->GetTextureUVIndex(lPolygonIndex, lVerticeIndex);
-				}
-				else {
-					lCurrentUVIndex = pMesh->GetPolygonVertex(lPolygonIndex, lVerticeIndex);
-				}
-				
-				if ( /*normalStatus &&*/ lNormals /*&& lNormals->GetCount() == lControlPointsCount*/) {
-					//GetPolygonVertexNormal(int pPolyIndex, int pVertexIndex, KFbxVector4 &pNormal)
-					KFbxVector4 pNormal;
-					pMesh->GetPolygonVertexNormal(lPolygonIndex, lVerticeIndex, pNormal);
+					int lCurrentUVIndex;
 					
-					//printf("normals!");
-					glNormal3d(pNormal[0], pNormal[1] /* * -1.0 */, pNormal[2]);
-					//					glNormal3d(lNormals->GetAt(lCurrentUVIndex)[0], lNormals->GetAt(lCurrentUVIndex)[1], lNormals->GetAt(lCurrentUVIndex)[2]);
-				}
+					if(lMesh->GetLayer(0) && lMesh->GetLayer(0)->GetUVs())
+						lMappingMode = lMesh->GetLayer(0)->GetUVs()->GetMappingMode();
+					
+					if (lMappingMode == KFbxLayerElement::eBY_POLYGON_VERTEX)
+						lCurrentUVIndex = lMesh->GetTextureUVIndex(i, j);
+					else 
+						lCurrentUVIndex = lMesh->GetPolygonVertex(i, j);
 				
-				glVertex3dv((GLdouble *)pVertexArray[pMesh->GetPolygonVertex(lPolygonIndex, lVerticeIndex)]);
+					pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].x = (float)lUVArray->GetAt(lCurrentUVIndex)[0];
+					pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].y = 1.0 - (float)lUVArray->GetAt(lCurrentUVIndex)[1];
+					
+				}
 			}
-			glEnd();		
 		}
-		glPopMatrix();
 	}
 	
+	void S9FbxLoader::setupForCinderSkeleton(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition) {
+		// TODO - Not implemented yet but I'm not far off!
+		
+	}
 	
-# pragma mark Draw MeshGL Textured
-	
-	void S9FbxLoader::drawMeshGLTex(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, KFbxMesh* pMesh, KFbxVector4* pVertexArray)
-	{	
-	//	glEnable(GL_TEXTURE_2D);
-	//	glEnable(GL_COLOR_MATERIAL);
-		
-		//get normals
-		KFbxLayerElementArrayTemplate<KFbxVector4> *lNormals = NULL;
-		bool normalStatus = pMesh->GetNormals(&lNormals);
-		
-		
-		glPushMatrix();
-		glMultMatrixd((double*) pGlobalPosition);
-		
-		int lPolygonIndex;
-		int lPolygonCount = pMesh->GetPolygonCount();
-		
-		for (lPolygonIndex = 0; lPolygonIndex < lPolygonCount; lPolygonIndex++) {
-			int lMatId = -1;
-			KFbxLayerElement::EMappingMode lMappingMode = KFbxLayerElement::eNONE;
-			KFbxLayerElementArrayTemplate<KFbxVector2>* lUVArray = NULL;
-			pMesh->GetTextureUV(&lUVArray, KFbxLayerElement::eDIFFUSE_TEXTURES);
-			
-			for (int l = 0; l < pMesh->GetLayerCount(); l++) {
-				KFbxLayerElementMaterial* lLayerMaterial = pMesh->GetLayer(l)->GetMaterials();
-				if (lLayerMaterial) {
-					
-					KFbxSurfaceMaterial* lMaterial = NULL;
-					pNode->GetMaterial(lLayerMaterial->GetIndexArray().GetAt(l));
-					lMatId = lLayerMaterial->GetIndexArray().GetAt(lPolygonIndex);
-				}
-			}
-			
-			if (lMatId >=0) {
-				
-				if(pMesh->GetLayer(0) && pMesh->GetLayer(0)->GetUVs())
-					lMappingMode = pMesh->GetLayer(0)->GetUVs()->GetMappingMode();
-				
-				if (mMaterials[lMatId].isTextured) {
-					mMaterials[lMatId].tex.bind();
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-				}
-				
-				float r = mMaterials[lMatId].colour.x;
-				float g = mMaterials[lMatId].colour.y;
-				float b = mMaterials[lMatId].colour.z;
- 				
-				glColor3f(r,g,b);
-//				GLfloat mat[]= {r, g, b};
 
-				// This step loses us around 10fps!!
-//				glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,mMaterials[lMatId].glMat);
-				
-			}
-			
-			int lVerticeIndex;
-			int lVerticeCount = pMesh->GetPolygonSize(lPolygonIndex);
-			
-			
-			glBegin(GL_TRIANGLES);
-			
-			for (lVerticeIndex = 0; lVerticeIndex < lVerticeCount; lVerticeIndex++){
-				int lCurrentUVIndex;
-				
-				if (lMappingMode == KFbxLayerElement::eBY_POLYGON_VERTEX){
-					lCurrentUVIndex = pMesh->GetTextureUVIndex(lPolygonIndex, lVerticeIndex);
-				}
-				else {
-					lCurrentUVIndex = pMesh->GetPolygonVertex(lPolygonIndex, lVerticeIndex);
-				}
-				if(lUVArray) {
-					//(U,1-V)
-					//flipping UV's as texture is flipped
-					glTexCoord2d(lUVArray->GetAt(lCurrentUVIndex)[0], (double)((double)1.0 - lUVArray->GetAt(lCurrentUVIndex)[1]));
-				}
-				
-				if ( /*normalStatus &&*/ lNormals /*&& lNormals->GetCount() == lControlPointsCount*/) {
-					//GetPolygonVertexNormal(int pPolyIndex, int pVertexIndex, KFbxVector4 &pNormal)
-					KFbxVector4 pNormal;
-					pMesh->GetPolygonVertexNormal(lPolygonIndex, lVerticeIndex, pNormal);
-					
-					//printf("normals!");
-					glNormal3d(pNormal[0], pNormal[1] /* * -1.0 */, pNormal[2]);
-					//					glNormal3d(lNormals->GetAt(lCurrentUVIndex)[0], lNormals->GetAt(lCurrentUVIndex)[1], lNormals->GetAt(lCurrentUVIndex)[2]);
-				}
-				
-				glVertex3dv((GLdouble *)pVertexArray[pMesh->GetPolygonVertex(lPolygonIndex, lVerticeIndex)]);
-			}
-			
-			glEnd();
-			
-			if(mMaterials[lMatId].isTextured)
-				mMaterials[lMatId].tex.unbind();
-			
-		}
-		
-		glPopMatrix();
-	//	glDisable(GL_TEXTURE_2D);
-	//	glDisable(GL_COLOR_MATERIAL);
-	}
-	
-	
-	void S9FbxLoader::drawSkeleton(KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition, KFbxXMatrix& pGlobalPosition) {
-		KFbxSkeleton* lSkeleton = (KFbxSkeleton*) pNode->GetNodeAttribute();
-		
-		// Only draw the skeleton if it's a limb node and if 
-		// the parent also has an attribute of type skeleton.
-		if (/*lSkeleton->GetSkeletonType() == KFbxSkeleton::eLIMB_NODE && */
-			pNode->GetParent() &&
-			pNode->GetParent()->GetNodeAttribute() &&
-			pNode->GetParent()->GetNodeAttribute()->GetAttributeType() == KFbxNodeAttribute::eSKELETON)
-			
-		{
-			
-			glPushMatrix();
-			
-			KFbxVector4 e;
-			KFbxVector4 s;
-			
-			KFbxXMatrix sm;
-			KFbxXMatrix em;
-			
-			sm.SetIdentity();
-			em.SetIdentity();
-			
-			glColor3f(0.0, 1.0, 0.0); // TODO - Again bad really 
-			
-			int idx = getCustomRotation(pNode->GetParent());
-			if (idx != -1){
-				sm  = mBones[idx].matrix;
-				if ( mBones[idx].targeted)
-					glColor3f(1.0, 0.0, 0.0);
-			}
-			
-			
-			idx = getCustomRotation(pNode);
-			if (idx != -1){
-				em  = mBones[idx].matrix;
-			}
-			
-			e = em.GetT();
-			s = sm.GetT();
-			
-			KFbxVector4 d = e;
-			d = d - s;
-			
-			glTranslated(s[0],s[1],s[2]);
-			glLineWidth(5.0);
-			glBegin(GL_LINES);
-			glVertex3d(0,0,0);
-			if (mBones[idx].targeted) {
-				glColor3f(1.0, 0.0, 0.0);
-			}
-			glVertex3d(d[0],d[1],d[2] );
-			
-			glEnd();			
-			
-			glPopMatrix();
-			
-		}
-		
-	}
-	
-	
-	// ********************************************************************************
-	// Cluster Deformation
-	// ********************************************************************************
-	
-#pragma mark Cluster Deformation
-	
-	void S9FbxLoader::rotateBone(int boneid, ci::Matrix44f &mat) {
-		if (boneid > -1 && boneid < mBones.size()){
-			
-			if (mat != mBones[boneid].cindermatrix){
-				
-				for (vector <FbxRotation>::iterator it = mBones.begin(); it != mBones.end(); it ++){
-					it->targeted = false;
-				}
-				
-				ci::Matrix44f tmp(mat);
-				
-				mat =  mBones[boneid].cindermatrix.inverted() * mat;// take the difference. We want ABSOLUTE matrix values passed in
-				
-				mBones[boneid].cindermatrix = tmp;
-				
-				mBones[boneid].rmatrix = toFBXMatrix(mat);
-				
-				mBones[boneid].targeted = true;
-				
-				// Recursively add the rotations up
-				
-				KFbxNode *pNode = mBones[boneid].node;
-				KFbxNode *pParent = pNode->GetParent();
-				
-				int pid = getCustomRotation(pParent);
-				
-				KFbxXMatrix pm = mBones[pid].matrix;
-				
-				mBones[boneid].matrix *= mBones[boneid].rmatrix;
-				//mBones[boneid].matrix = pm * mBones[boneid].rmatrix * pm.Inverse() * mBones[boneid].matrix;
-				
-				int i, lCount = pNode->GetChildCount();
-				
-				for (i = 0; i < lCount; i++){
-					rotateBoneRecursive(pNode->GetChild(i), mBones[boneid].matrix, mBones[boneid].rmatrix);
-				}
-			}
-		}
-	}
-	
-	void S9FbxLoader::rotateBoneRecursive(KFbxNode *pNode, KFbxXMatrix mat, KFbxXMatrix rmat) {
-		
-		int idx = getCustomRotation(pNode);
-		if (idx != -1){
-			mBones[idx].targeted = true;
-			KFbxXMatrix cp = pNode->GetScene()->GetEvaluator()->GetNodeGlobalTransform(pNode, mCurrentTime);
-			
-			
-			//mBones[idx].matrix =  mat * rmat * mat.Inverse() * cp;
-			mBones[idx].matrix =  mat * rmat * mat.Inverse() * mBones[idx].matrix;
-			
-			int i, lCount = pNode->GetChildCount();
-			
-			for (i = 0; i < lCount; i++){
-				
-				rotateBoneRecursive(pNode->GetChild(i), mat, rmat);
-			}
-		}
-	}
-	
-	
-	void S9FbxLoader::resetRotations() {
-		
-		for (vector <FbxRotation>::iterator it = mBones.begin(); it != mBones.end(); it ++){
-			it->matrix = it->node->GetScene()->GetEvaluator()->GetNodeGlobalTransform(it->node, mCurrentTime);
-			it->rmatrix.SetIdentity();
-		}
-	}
-	
-	void S9FbxLoader::setupBones() {
-		
-		int lSkinCount = mMesh->GetDeformerCount(KFbxDeformer::eSKIN);
-		for ( int i=0; i<lSkinCount; ++i) {
-			
-			int lClusterCount =( (KFbxSkin *)mMesh->GetDeformer(i, KFbxDeformer::eSKIN))->GetClusterCount();
-			
-			for (int j=0; j<lClusterCount; ++j){
-				KFbxCluster* lCluster =((KFbxSkin *) mMesh->GetDeformer(i, KFbxDeformer::eSKIN))->GetCluster(j);
-				if (!lCluster->GetLink()) // this is actual bone - GetLink
-					continue;
-				else {
-					
-					FbxRotation b;
-					b.targeted = false;
-					b.node = lCluster->GetLink();
-					b.matrix = b.node->GetScene()->GetEvaluator()->GetNodeGlobalTransform(b.node, mCurrentTime);
-					mBones.push_back(b);
-				}			
-			}
-		}	
-	}
-	
-	
-	void S9FbxLoader::computeClusterDeformation(KFbxXMatrix& pGlobalPosition,  KFbxMesh* pMesh,  KFbxVector4* pVertexArray) {
+	void S9FbxLoader::setupForCinderDeformations(shared_ptr<FbxDrawable> pDrawable, KFbxXMatrix& pGlobalPosition,  KFbxMesh* pMesh, shared_ptr<FbxMesh> pCinderMesh) {
 		
 		KFbxCluster::ELinkMode lClusterMode = ((KFbxSkin*)pMesh->GetDeformer(0, KFbxDeformer::eSKIN))->GetCluster(0)->GetLinkMode();
 		
-		int i, j;
-		int lClusterCount=0;
-		
-		int lVertexCount = pMesh->GetControlPointsCount();
 		int lSkinCount = pMesh->GetDeformerCount(KFbxDeformer::eSKIN);
 		
-		KFbxXMatrix* lClusterDeformation = new KFbxXMatrix[lVertexCount];
-		memset(lClusterDeformation, 0, lVertexCount * sizeof(KFbxXMatrix));
-		double* lClusterWeight = new double[lVertexCount];
-		memset(lClusterWeight, 0, lVertexCount * sizeof(double));
 		
-		if (lClusterMode == KFbxCluster::eADDITIVE) {
-			for (i = 0; i < lVertexCount; i++){
-				lClusterDeformation[i].SetIdentity();
-			}
-		}
-		
-		for ( i=0; i<lSkinCount; ++i) {
+		if (lSkinCount > 0) {
 			
+			map< shared_ptr<FbxRotation>, KFbxNode*> cinderToFBX;
+
+			// TODO - Just use the first skin for now!	
 			
-			lClusterCount =( (KFbxSkin *)pMesh->GetDeformer(i, KFbxDeformer::eSKIN))->GetClusterCount();
+			int numClusters = ((KFbxSkin *) pMesh->GetDeformer(0, KFbxDeformer::eSKIN))->GetClusterCount();
 			
-			for (j=0; j<lClusterCount; ++j){
-				KFbxCluster* lCluster =((KFbxSkin *) pMesh->GetDeformer(i, KFbxDeformer::eSKIN))->GetCluster(j);
-				if (!lCluster->GetLink()) // this is actual bone - GetLink
+			// Clusters = Matrices and indicies into the Vertex Array
+			
+			for (int i = 0; i < numClusters; ++i){
+				shared_ptr<FbxCluster> cinderCluster(new FbxCluster);
+				pCinderMesh->clusters.push_back(cinderCluster);
+			
+				KFbxCluster* fbxCluster = ((KFbxSkin *) pMesh->GetDeformer(0, KFbxDeformer::eSKIN))->GetCluster(i);
+				if (!fbxCluster->GetLink()) // this is actual bone - GetLink
 					continue;
+			
+				cinderCluster->mode = lClusterMode;
+				
+				// Matrices
 				
 				KFbxXMatrix lReferenceGlobalInitPosition;
 				KFbxXMatrix lReferenceGlobalCurrentPosition;
@@ -786,111 +418,116 @@ namespace S9{
 				KFbxXMatrix lClusterGlobalCurrentPosition;
 				KFbxXMatrix lReferenceGeometry;
 				KFbxXMatrix lClusterGeometry;
-				
-				KFbxXMatrix lClusterRelativeInitPosition;
-				KFbxXMatrix lClusterRelativeCurrentPositionInverse;
 				KFbxXMatrix lVertexTransformMatrix;
 				
-				if (lClusterMode == KFbxLink::eADDITIVE && lCluster->GetAssociateModel()) {
-					lCluster->GetTransformAssociateModelMatrix(lReferenceGlobalInitPosition);
-					lReferenceGlobalCurrentPosition = GetGlobalPosition(lCluster->GetAssociateModel(), mCurrentTime);
-					lReferenceGeometry = GetGeometry(lCluster->GetAssociateModel());
+				KFbxXMatrix lClusterRelativeInitPosition;
+				KFbxXMatrix lClusterRelativeCurrentPositionInverse;				
+				
+				if (lClusterMode == KFbxLink::eADDITIVE && fbxCluster->GetAssociateModel()) {
+					fbxCluster->GetTransformAssociateModelMatrix(lReferenceGlobalInitPosition);
+					lReferenceGlobalCurrentPosition = GetGlobalPosition(fbxCluster->GetAssociateModel(), mCurrentTime);
+					lReferenceGeometry = GetGeometry(fbxCluster->GetAssociateModel());
 					lReferenceGlobalCurrentPosition *= lReferenceGeometry;
+					
 				}
 				else {
-					lCluster->GetTransformMatrix(lReferenceGlobalInitPosition);
+					fbxCluster->GetTransformMatrix(lReferenceGlobalInitPosition);
 					lReferenceGlobalCurrentPosition = pGlobalPosition;
 					lReferenceGeometry = GetGeometry(pMesh->GetNode());				
 					lReferenceGlobalInitPosition *= lReferenceGeometry;
 				}
 				
+				fbxCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
+				lClusterGlobalCurrentPosition = GetGlobalPosition(fbxCluster->GetLink(), mCurrentTime);
 				
-				lCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
+				// Relate this cluster to a new cinder bone
 				
-				lClusterGlobalCurrentPosition = GetGlobalPosition(lCluster->GetLink(), mCurrentTime);
+				shared_ptr<FbxRotation> b (new FbxRotation);
+				cinderCluster->bone = b;
+				pCinderMesh->bones.push_back(b);
+				b->targeted = false;
+				
+				cinderToFBX[b] = fbxCluster->GetLink();
+				
+			
+				// Apply the Matrices
+				
+				Matrix44f m = toCinderMatrix(lClusterGlobalCurrentPosition);
+				b->baseMatrix = m;
+				b->realMatrix = shared_ptr<Matrix44f>( new Matrix44f(m) );
 				
 				
-				int idx = getCustomRotation(lCluster->GetLink());
-				if (idx != -1){
-					lClusterGlobalCurrentPosition  = mBones[idx].matrix;
+				Matrix44f pr = toCinderMatrix(lReferenceGlobalCurrentPosition.Inverse());
+				Matrix44f ps = toCinderMatrix(lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition);
+				cinderCluster->transform = b->realMatrix;
+				cinderCluster->pretransform = pr;
+				cinderCluster->posttransform = ps;
+				
+			/*	if (mApplyMatrices) {
+					b->baseMatrix = pCinderMesh->offset * b->baseMatrix * pCinderMesh->offset.inverted();
+					b->realMatrix = pCinderMesh->offset * b->realMatrix * pCinderMesh->offset.inverted();
+					
+					cinderCluster->pretransform = pCinderMesh->offset * cinderCluster->pretransform * pCinderMesh->offset.inverted();
+					cinderCluster->posttransform = pCinderMesh->offset *  cinderCluster->posttransform * pCinderMesh->offset.inverted();
+				}*/
+				
+
+				// Setup the Indices and weights - it SHOULD be indices and weights for the matrices we currently have
+				
+				int numIndicies = fbxCluster->GetControlPointIndicesCount();
+				
+				
+				Vec3f centre (0,0,0);
+				
+				cinderCluster->mMax = Vec3f(-1e10,-1e10,-1e10);
+				cinderCluster->mMin = Vec3f(1e10,1e10,1e10);
+		
+				
+				for (int j =0; j < numIndicies; ++j){
+					cinderCluster->indicies.push_back(fbxCluster->GetControlPointIndices()[j]);
+					cinderCluster->weights.push_back(fbxCluster->GetControlPointWeights()[j]);
+					
+					Vec3f vert = pCinderMesh->vertices[fbxCluster->GetControlPointIndices()[j]];
+					
+					cinderCluster->mMax.x = vert.x > cinderCluster->mMax.x ? vert.x : cinderCluster->mMax.x;
+					cinderCluster->mMax.y = vert.y > cinderCluster->mMax.y ? vert.y : cinderCluster->mMax.y;
+					cinderCluster->mMax.z = vert.z > cinderCluster->mMax.z ? vert.z : cinderCluster->mMax.z;
+					
+					cinderCluster->mMin.x = vert.x < cinderCluster->mMin.x ? vert.x : cinderCluster->mMin.x;
+					cinderCluster->mMin.y = vert.y < cinderCluster->mMin.y ? vert.y : cinderCluster->mMin.y;
+					cinderCluster->mMin.z = vert.z < cinderCluster->mMin.z ? vert.z : cinderCluster->mMin.z;
+					
+					centre += vert;
+					
 				}
 				
-				lClusterRelativeInitPosition = lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
+				if (centre != Vec3f::zero()){
+					cinderCluster->mCentre = centre * 1.0 / static_cast<float>(numIndicies);
+				}
+				else {
+					cinderCluster->mCentre = centre;
+				}
+
+
 				
-				lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * lClusterGlobalCurrentPosition;
+			}
+			
+			// Now, we need to setup the Bone hierarchy so we can rotate and pass down the transforms
+			
+			for (map< shared_ptr<FbxRotation>, KFbxNode*>::iterator it = cinderToFBX.begin(); it != cinderToFBX.end(); it++){
+				shared_ptr<FbxRotation> f = (*it).first;
+				KFbxNode* n = (*it).second;
+				KFbxNode* p = n->GetParent();
 				
-				
-				lVertexTransformMatrix = lClusterRelativeCurrentPositionInverse * lClusterRelativeInitPosition;
-				
-				
-				int k;
-				int lVertexIndexCount = lCluster->GetControlPointIndicesCount();
-				
-				for (k = 0; k < lVertexIndexCount; ++k) 
-				{            
-					int lIndex = lCluster->GetControlPointIndices()[k];
-					if (lIndex >= lVertexCount)
-						continue;
-					
-					double lWeight = lCluster->GetControlPointWeights()[k];
-					
-					if (lWeight == 0.0){
-						continue;
-					}	
-					
-					// Compute the influence of the link on the vertex.
-					KFbxXMatrix lInfluence = lVertexTransformMatrix;
-					MatrixScale(lInfluence, lWeight);
-					
-					if (lClusterMode == KFbxCluster::eADDITIVE)
-					{   
-						// Multiply with to the product of the deformations on the vertex.
-						MatrixAddToDiagonal(lInfluence, 1.0 - lWeight);
-						lClusterDeformation[lIndex] = lInfluence * lClusterDeformation[lIndex];
-						
-						// Set the link to 1.0 just to know this vertex is influenced by a link.
-						lClusterWeight[lIndex] = 1.0;
-					}
-					else // lLinkMode == KFbxLink::eNORMALIZE || lLinkMode == KFbxLink::eTOTAL1
-					{
-						// Add to the sum of the deformations on the vertex.
-						MatrixAdd(lClusterDeformation[lIndex], lInfluence);
-						
-						// Add to the sum of weights to either normalize or complete the vertex.
-						lClusterWeight[lIndex] += lWeight;
+				for (vector< shared_ptr<FbxRotation> >::iterator ij = pCinderMesh->bones.begin(); ij != pCinderMesh->bones.end(); ij++) {
+					if (cinderToFBX[(*ij)] == p){
+						f->parent = *ij;
+						break;
 					}
 				}
 			}
 		}
-		
-		for (i = 0; i < lVertexCount; i++) 
-		{
-			KFbxVector4 lSrcVertex = pVertexArray[i];
-			KFbxVector4& lDstVertex = pVertexArray[i];
-			double lWeight = lClusterWeight[i];
-			
-			// Deform the vertex if there was at least a link with an influence on the vertex,
-			if (lWeight != 0.0) 
-			{
-				lDstVertex = lClusterDeformation[i].MultT(lSrcVertex);
-				
-				if (lClusterMode == KFbxCluster::eNORMALIZE) {
-					// In the normalized link mode, a vertex is always totally influenced by the links. 
-					lDstVertex /= lWeight;
-				}	
-				else if (lClusterMode == KFbxCluster::eTOTAL1){
-					// In the total 1 link mode, a vertex can be partially influenced by the links. 
-					lSrcVertex *= (1.0 - lWeight);
-					lDstVertex += lSrcVertex;
-				}
-			} 
-		}
-		
-		delete [] lClusterDeformation;
-		delete [] lClusterWeight;
 	}
-	
-	
 	
 	
 	// ********************************************************************************
@@ -900,159 +537,16 @@ namespace S9{
 #pragma mark misc function
 	
 	
-	void S9FbxLoader::preparePointCacheData(KFbxScene* pScene)
-	{
-		// This function show how to cycle thru scene elements in a linear way.
-		int lIndex, lNodeCount = KFbxGetSrcCount<KFbxNode>(pScene);
-		
-		for (lIndex=0; lIndex<lNodeCount; lIndex++) {
-			KFbxNode* lNode = KFbxGetSrc<KFbxNode>(pScene, lIndex);
-			
-			if (lNode->GetGeometry()) 
-			{
-				int i, lVertexCacheDeformerCount = lNode->GetGeometry()->GetDeformerCount(KFbxDeformer::eVERTEX_CACHE);
-				
-				// There should be a maximum of 1 Vertex Cache Deformer for the moment
-				lVertexCacheDeformerCount = lVertexCacheDeformerCount > 0 ? 1 : 0;
-				
-				for (i=0; i<lVertexCacheDeformerCount; ++i ) {
-					// Get the Point Cache object
-					KFbxVertexCacheDeformer* lDeformer = static_cast<KFbxVertexCacheDeformer*>(lNode->GetGeometry()->GetDeformer(i, KFbxDeformer::eVERTEX_CACHE));
-					if( !lDeformer ) continue;
-					KFbxCache* lCache = lDeformer->GetCache();
-					if( !lCache ) continue;
-					
-					// Process the point cache data only if the constraint is active
-					if (lDeformer->IsActive()) {
-						if (lCache->GetCacheFileFormat() == KFbxCache::ePC2) {
-							// This code show how to convert from PC2 to MC point cache format
-							// turn it on if you need it.
-#if 0 
-							if (!lCache->ConvertFromPC2ToMC(KFbxCache::eMC_ONE_FILE, 
-															KTime::GetFrameRate(pScene->GetGlobalTimeSettings().GetTimeMode()))) {
-								
-								KString lTheErrorIs = lCache->GetError().GetLastErrorString();
-							}
-#endif
-						}
-						else if (lCache->GetCacheFileFormat() == KFbxCache::eMC)
-						{
-							// This code show how to convert from MC to PC2 point cache format
-							// turn it on if you need it.
-							//#if 0 
-							if (!lCache->ConvertFromMCToPC2(KTime::GetFrameRate(pScene->GetGlobalSettings().GetTimeMode()), 0))
-							{
-								// Conversion failed, retrieve the error here
-								KString lTheErrorIs = lCache->GetError().GetLastErrorString();
-							}
-							//#endif
-						}
-						
-						
-						// Now open the cache file to read from it
-						if (!lCache->OpenFileForRead())
-						{
-							// Cannot open file 
-							KString lTheErrorIs = lCache->GetError().GetLastErrorString();
-							
-							// Set the deformer inactive so we don't play it back
-							lDeformer->SetActive(false);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	
-	void S9FbxLoader::readVertexCacheData(KFbxMesh* pMesh, KFbxVector4* pVertexArray)
-	{
-		KFbxVertexCacheDeformer* lDeformer     = static_cast<KFbxVertexCacheDeformer*>(pMesh->GetDeformer(0, KFbxDeformer::eVERTEX_CACHE));
-		KFbxCache*               lCache        = lDeformer->GetCache();
-		int                      lChannelIndex = -1;
-		unsigned int             lVertexCount  = (unsigned int)pMesh->GetControlPointsCount();
-		bool                     lReadSucceed  = false;
-		double*                  lReadBuf      = new double[3*lVertexCount];
-		
-		if (lCache->GetCacheFileFormat() == KFbxCache::eMC)
-		{
-			if ((lChannelIndex = lCache->GetChannelIndex(lDeformer->GetCacheChannel())) > -1)
-			{
-				lReadSucceed = lCache->Read(lChannelIndex, mCurrentTime, lReadBuf, lVertexCount);
-			}
-		}
-		else // ePC2
-		{
-			lReadSucceed = lCache->Read((unsigned int)mCurrentTime.GetFrame(true), lReadBuf, lVertexCount);
-		}
-		
-		if (lReadSucceed)
-		{
-			unsigned int lReadBufIndex = 0;
-			
-			while (lReadBufIndex < 3*lVertexCount)
-			{
-				// In statements like "pVertexArray[lReadBufIndex/3].SetAt(2, lReadBuf[lReadBufIndex++])", 
-				// on Mac platform, "lReadBufIndex++" is evaluated before "lReadBufIndex/3". 
-				// So separate them.
-				pVertexArray[lReadBufIndex/3].SetAt(0, lReadBuf[lReadBufIndex]); lReadBufIndex++;
-				pVertexArray[lReadBufIndex/3].SetAt(1, lReadBuf[lReadBufIndex]); lReadBufIndex++;
-				pVertexArray[lReadBufIndex/3].SetAt(2, lReadBuf[lReadBufIndex]); lReadBufIndex++;
-			}
-		}
-		
-		delete [] lReadBuf;
-	}
-	
-	
-	// Essentially hunts through recursively for things we might need
-	
-	void S9FbxLoader::setupInternalRefs(KFbxNode* pNode){
-		
-		KFbxNodeAttribute* lNodeAttribute = pNode->GetNodeAttribute();
-		
-		if (lNodeAttribute){
-			if (lNodeAttribute->GetAttributeType() == KFbxNodeAttribute::eMESH){
-				mMesh = (KFbxMesh*) pNode->GetNodeAttribute();
-			}
-		}
-		
-		
-		int i, lCount = pNode->GetChildCount();
-		
-		for (i = 0; i < lCount; i++){
-			setupInternalRefs(pNode->GetChild(i));
-		}
-	}
-	
-	int	S9FbxLoader::getCustomRotation(KFbxNode *pNode) {
-		int index = 0;
-		for(vector<FbxRotation>::iterator i = mBones.begin(); i != mBones.end(); i ++) {
-			if (i->node == pNode)
-				return index;
-			index ++;
-		}
-		return -1;
-	}
-	
-	
-	FbxRotation	S9FbxLoader::getCustomRotation(int idx) {
-		return mBones[idx];
-	}
-	
-	
-	
-	// TODO - static_cast<T>(x) instead?
-	
 	ci::Matrix44f S9FbxLoader::toCinderMatrix(KFbxXMatrix m) {
 		
 		ci::Matrix44f r;
 		
-		double * dst = (double*) &r;
-		float * src = (float*)&m;
+		float * dst = (float*) &r;
+		double * src = (double*)&m;
 		
 		for(int i = 0; i < 16; i++){
-			*dst = (float) *src;
+			*dst = static_cast<float>( *src );
+			//*dst = (float) *src;
 			dst++;
 			src++;
 		}
@@ -1067,54 +561,13 @@ namespace S9{
 		float * src = (float*)&m;
 		
 		for(int i = 0; i < 16; i++){
-			*dst = (double) *src;
+			*dst = static_cast<double>( *src);
 			dst++;
 			src++;
 		}
 		return r;
 	}
-	
-	ci::Matrix44f S9FbxLoader::getCinderMatrix(int boneid) {
-		if (boneid >-1 && boneid < mBones.size()){
-			return mBones[boneid].cindermatrix;
-		}
-		return ci::Matrix44f();
-	}
-	
-	Vec3f S9FbxLoader::getBoneVector(int boneid) {
-		if (boneid >-1 && boneid < mBones.size()){
-			
-			KFbxVector4 e;
-			KFbxVector4 s;
-			
-			KFbxXMatrix sm;
-			KFbxXMatrix em;
-			
-			sm.SetIdentity();
-			em.SetIdentity();
-			
-			em  = mBones[boneid].matrix;
-			
-			int idx = getCustomRotation(mBones[boneid].node->GetParent());
-			if (idx != -1){
-				sm  = mBones[idx].matrix;
-			}
-			
-			e = em.GetT();
-			s = sm.GetT();
-			
-			KFbxVector4 d = e;
-			d = d - s;
-			
-			Vec3f rd (d[0],d[1],d[2]);
-			rd.normalize();
-			return rd;
-			
-		}
-		return Vec3f::zero();
-	}
-	
-	
+		
 	
 	// ********************************************************************************
 	// Texture Methods
@@ -1122,12 +575,12 @@ namespace S9{
 	
 #pragma mark Texture and Material Methods
 	
-	void S9FbxLoader::loadSupportedMaterials() {
+	void S9FbxLoader::loadSupportedMaterials(shared_ptr<FbxDrawable>  pDrawable) {
 		mTextureArray.Clear();
-		loadSupportedMaterialsRecursive(mScene->GetRootNode());
+		loadSupportedMaterialsRecursive(mScene->GetRootNode(), pDrawable);
 	}
 	
-	void S9FbxLoader::loadSupportedMaterialsRecursive(KFbxNode* pNode){
+	void S9FbxLoader::loadSupportedMaterialsRecursive(KFbxNode* pNode, shared_ptr<FbxDrawable>  pDrawable){
 		if (pNode) {
 			int i, lCount;
 			KFbxNodeAttribute* lNodeAttribute = pNode->GetNodeAttribute();
@@ -1164,8 +617,8 @@ namespace S9{
 						if(lMaterial){
 							
 							// Texture
-							FbxMaterial material;
-							material.isTextured = false;
+							shared_ptr<FbxMaterial> material (new FbxMaterial);
+							material->isTextured = false;
 							
 							lProperty = lMaterial->FindProperty(KFbxSurfaceMaterial::sDiffuse);
 							if(lProperty.IsValid()){
@@ -1173,8 +626,8 @@ namespace S9{
 								for (lTextureIndex = 0; lTextureIndex < lNbTex; lTextureIndex++){
 									lTexture = KFbxCast <KFbxTexture> (lProperty.GetSrcObject(KFbxTexture::ClassId, lTextureIndex)); 
 									if(lTexture){
-										material.tex = loadTexture(lTexture);
-										material.isTextured = true;
+										material->tex = loadTexture(lTexture, pDrawable);
+										material->isTextured = true;
 									}
 								}
 							}
@@ -1183,14 +636,14 @@ namespace S9{
 							
 							if (lMaterial->GetClassId().Is(KFbxSurfaceLambert::ClassId)) {
 								KFbxPropertyDouble3 lKFbxDouble3 =((KFbxSurfaceLambert *)lMaterial)->GetDiffuseColor();
-								material.colour = Vec3f(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
+								material->colour = Vec3f(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
 							}
 							else if (lMaterial->GetClassId().Is(KFbxSurfacePhong::ClassId)){
 								KFbxPropertyDouble3 lKFbxDouble3 =((KFbxSurfacePhong *) lMaterial)->GetDiffuseColor();
-								material.colour = Vec3f(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
+								material->colour = Vec3f(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
 							}
 							
-							mMaterials.push_back(material);	// Hopefully this index matches
+							pDrawable->materials.push_back(material);	// Hopefully this index matches
 							
 						}
 					}
@@ -1200,19 +653,19 @@ namespace S9{
 			lCount = pNode->GetChildCount();
 			
 			for (i = 0; i < lCount; i++){
-				loadSupportedMaterialsRecursive(pNode->GetChild(i));
+				loadSupportedMaterialsRecursive(pNode->GetChild(i), pDrawable);
 			}
 		}
 	}
 	
-	gl::Texture S9FbxLoader::loadTexture(KFbxTexture* pTexture) {
+	gl::Texture S9FbxLoader::loadTexture(KFbxTexture* pTexture, shared_ptr<FbxDrawable>  pDrawable) {
 		std::string textureFileName = std::string(pTexture->GetFileName());
 		
 		int lCount = mTextureArray.GetCount();
 		
 		map<std::string,gl::Texture>::iterator it;
-		it=mMapToTex.find(textureFileName);
-		if (it != mMapToTex.end())
+		it= pDrawable->mMapToTex.find(textureFileName);
+		if (it != pDrawable->mMapToTex.end())
 			return (*it).second;
 		
 		// TODO - Fail gracefully (try catch?) if texture not found and disallow texture rendering
@@ -1220,126 +673,9 @@ namespace S9{
 		app::console() << "Loading texture: " << mPath << "/" << textureFileName << endl;
 		gl::Texture texture = loadImage(mPath + "/" + textureFileName); 
 		mTextureArray.Add(texture);
-		mMapToTex[textureFileName] = texture;
+		pDrawable->mMapToTex[textureFileName] = texture;
 		return texture;
 	}
-	
-#pragma mark Collision Detection
-	
-
-	int S9FbxLoader::collisionRecursive(KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition, int lvl, Vec3f p, float r) {
-		int c = 0;
 		
-		KFbxXMatrix lGlobalPosition = GetGlobalPosition(pNode, mCurrentTime, &pParentGlobalPosition);
-		KFbxXMatrix lGeometryOffset = GetGeometry(pNode);
-		KFbxXMatrix lGlobalOffPosition = lGlobalPosition * lGeometryOffset;	
-		
-		KFbxNodeAttribute* lNodeAttribute = pNode->GetNodeAttribute();
-		
-		if (lNodeAttribute) {
-			
-			if (lNodeAttribute->GetAttributeType() == KFbxNodeAttribute::eMESH) {
-				c += meshCollision(pNode, lGlobalOffPosition,p,r);
-			}
-		}
-		
-		int i, lCount = pNode->GetChildCount();
-	
-		for (i = 0; i < lCount; i++){
-			c += collisionRecursive(pNode->GetChild(i), lGlobalPosition,lvl+1,p,r);
-		}
-		
-		return c;
-	}
-	
-	
-	int S9FbxLoader::meshCollision(KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, Vec3f p, float r) {
-		KFbxMesh* lMesh = (KFbxMesh*) pNode->GetNodeAttribute();
-		
-		int lClusterCount = 0;
-		int lSkinCount= 0;
-		int lVertexCount = lMesh->GetControlPointsCount();
-		
-		int numcollisions = 0;
-		
-		// No vertex to draw.
-		if (lVertexCount == 0)
-			return 0;
-		
-		// Create a copy of the vertex array to receive vertex deformations.
-		KFbxVector4* lVertexArray = new KFbxVector4[lVertexCount];
-		memcpy(lVertexArray, lMesh->GetControlPoints(), lVertexCount * sizeof(KFbxVector4));
-		
-		// Active vertex cache deformer will overwrite any other deformer
-		if (lMesh->GetDeformerCount(KFbxDeformer::eVERTEX_CACHE) &&
-			(static_cast<KFbxVertexCacheDeformer*>(lMesh->GetDeformer(0, KFbxDeformer::eVERTEX_CACHE)))->IsActive())
-		{
-			readVertexCacheData(lMesh, lVertexArray);
-		}
-		else
-		{
-			
-			lSkinCount = lMesh->GetDeformerCount(KFbxDeformer::eSKIN);
-			for( int i=0; i< lSkinCount; i++)
-				lClusterCount += ((KFbxSkin *)(lMesh->GetDeformer(i, KFbxDeformer::eSKIN)))->GetClusterCount();
-			
-			if (lClusterCount){
-				computeClusterDeformation(pGlobalPosition, lMesh, lVertexArray);
-			}
-		}
-		
-		
-		int lPolygonIndex;
-		int lPolygonCount = lMesh->GetPolygonCount();
-		
-		
-		for (lPolygonIndex = 0; lPolygonIndex < lPolygonCount; lPolygonIndex++) {
-			
-			int lVerticeIndex;
-			int lVerticeCount = lMesh->GetPolygonSize(lPolygonIndex);
-			
-			for (lVerticeIndex = 0; lVerticeIndex < lVerticeCount; lVerticeIndex++){
-				
-				KFbxVector4 pv = lVertexArray[lMesh->GetPolygonVertex(lPolygonIndex, lVerticeIndex)];
-				
-				// How bloody annoying!
-				
-				Matrix44f pm(pGlobalPosition.Get(0,0),pGlobalPosition.Get(0,1),pGlobalPosition.Get(0,2), pGlobalPosition.Get(0,3), 
-							 pGlobalPosition.Get(1,0), pGlobalPosition.Get(1,1), pGlobalPosition.Get(1,2), pGlobalPosition.Get(1,3), 
-							pGlobalPosition.Get(2,0), pGlobalPosition.Get(2,1), pGlobalPosition.Get(2,2), pGlobalPosition.Get(2,3), 
-							 pGlobalPosition.Get(3,0), pGlobalPosition.Get(3,1), pGlobalPosition.Get(3,2), pGlobalPosition.Get(3,3)); 
-				
-				p = pm.inverted() * p;
-				
-				Vec3f t ((float)pv[0],(float)pv[1],(float)pv[2]);
-				float dd = t.distanceSquared(p);
-				if (dd <= r * r){
-					numcollisions++;
-				}
-				
-				
-			}
-		}
-		delete [] lVertexArray;
-		
-		return numcollisions;
-		
-	}
-	
-	
-	bool S9FbxLoader::bruteForceCollision(Vec3f p, float r){
-		
-		KFbxXMatrix lDummyGlobalPosition;
-		
-		int i, lCount = mScene->GetRootNode()->GetChildCount();
-		int c = 0;
-		
-		for (i = 0; i < lCount; i++){
-			c = collisionRecursive(mScene->GetRootNode()->GetChild(i), lDummyGlobalPosition,1,p,r);
-		}
-		return c != 0;
-		
-	}
-	
 	
 } // End Namespace S9

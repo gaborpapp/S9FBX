@@ -59,7 +59,7 @@ void Skinning::setup() {
 	
 	mParams.addParam( "Bone Rotation", &mTestBoneRot );
 	mParams.addParam( "BoneID", &mBoneID);
-	mParams.addParam( "Zoom ", &gConfigScene.eye.z, "min=5.0 max=30.0 step=1.0");
+	mParams.addParam( "Zoom ", &gConfigScene.eye.z, "min=5.0 max=100.0 step=1.0");
 	mParams.addParam( "Scale ", &gConfigScene.scale, "min=0.001 max=10.0 step=0.001");
 	
 	gConfigScene.scale = 0.04;
@@ -73,12 +73,14 @@ void Skinning::setup() {
 	gl::enableDepthRead();
 	gl::enableDepthWrite();
 	
+	glEnable(GL_TEXTURE_2D);
+	
 	cout << getAppPath() + "/../skinning_config.xml" << endl;
 	
 	XmlTree doc( loadFile(getAppPath() + "/../skinning_config.xml"));
 	string fbxpath = doc.getChild("/skinning/fbx").getValue();
 		
-	mFBXLoader.load(getAppPath() + "/../" + fbxpath.c_str());
+	pDrawable = mFBXLoader.load(getAppPath() + "/../" + fbxpath.c_str());
 	
 }
 
@@ -97,36 +99,21 @@ void Skinning::keyDown( KeyEvent event ) {
 	if( event.getChar() == 'f' )
 		setFullScreen( ! isFullScreen() );
 	if( event.getChar() == 'r' )
-		mFBXLoader.resetRotations();
+		mFBXDrawer.resetRotations(pDrawable->meshes[0]);
 	if( event.getChar() == 'p' )
 		mShowParams = !mShowParams;
-	if (event.getChar() == 'w'){
-		mDrawFilled = !mDrawFilled;
-		if (mDrawFilled){
-			mFBXLoader.mDrawMethod = FBX_DRAW_TEXTURED;
-		}
-		else{
-			mFBXLoader.mDrawMethod = FBX_DRAW_WIREFRAME;
-		}
-	}
 }
 
 void Skinning::update() {
 	
 	// Bone rotations
-/*	Matrix44f tm =  gSkinning->mTestBoneRot.toMatrix44();
-	if (gSkinning->mBoneID != -1){
-		gSkinning->mFBXLoader.rotateBone(gSkinning->mBoneID,tm);
-	}
-	if (gSkinning->mPrevBoneID != gSkinning->mBoneID){
-		gSkinning->mTestBoneRot.set(gSkinning->mFBXLoader.getCinderMatrix(gSkinning->mBoneID));
-		gSkinning->mPrevBoneID = gSkinning->mBoneID;
-	}	*/
+	Matrix44f m = mTestBoneRot.toMatrix44();
+	mFBXDrawer.rotateBone(pDrawable->meshes[0], mBoneID, m );
 }
 					
 
 void Skinning::resetBones() {
-	mFBXLoader.resetRotations();
+	//mFBXLoader.resetRotations();
 }
 
 void Skinning::drawGeometry() {
@@ -138,7 +125,7 @@ void Skinning::drawGeometry() {
 	// Scale it, cos its massive!
 	glPushMatrix();
 	glScalef(gConfigScene.scale, gConfigScene.scale, gConfigScene.scale);
-	mFBXLoader.draw();
+	mFBXDrawer.draw(pDrawable);
 	glPopMatrix();
 }
 
