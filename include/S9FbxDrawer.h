@@ -1,5 +1,5 @@
 /*
-					   __  .__              ________ 
+                       __  .__              ________ 
    ______ ____   _____/  |_|__| ____   ____/   __   \
   /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
   \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
@@ -55,30 +55,30 @@
 
 #include "S9FbxLoader.h"
 
-using namespace std;
 using namespace cinder;
 using namespace ci;
 
 namespace S9 {
-
+	
 	class S9FbxDrawer {
 	public:
 		
 		S9FbxDrawer() {};
-	
-		void	draw(shared_ptr<FbxDrawable> drawable);		
-		void	rotateBone(shared_ptr<FbxMesh> pMesh, int boneid, ci::Matrix44f &mat); 
-		void	resetRotations(shared_ptr<FbxMesh> pMesh);
-		void	drawMeshExtents(shared_ptr<FbxMesh> pMesh);
-		void	drawClusters(shared_ptr<FbxDrawable> pDrawable);
-	
-
+		
+		void	draw(std::shared_ptr<FbxDrawable> drawable);
+		void	drawNormals(std::shared_ptr<FbxDrawable> drawable);
+		void	rotateBone(std::shared_ptr<FbxMesh> pMesh, int boneid, ci::Matrix44d &mat); 
+		void	resetRotations(std::shared_ptr<FbxMesh> pMesh);
+		void	drawMeshExtents(std::shared_ptr<FbxMesh> pMesh);
+		void	drawClusters(std::shared_ptr<FbxDrawable> pDrawable);
+		
+		
 	protected:
-
-		void rotateBoneRecursive(shared_ptr<FbxRotation> pRot, shared_ptr<Matrix44f> pmat, Matrix44f rmat, shared_ptr<FbxMesh> pMesh);
-		void applyRotations(shared_ptr<FbxMesh> pMesh);
-	
+		
+		void rotateBoneRecursive(std::shared_ptr<FbxRotation> pRot, std::shared_ptr<Matrix44d> pmat, Matrix44d rmat, Matrix44d mat, std::shared_ptr<FbxMesh> pMesh);
+		void applyRotations(std::shared_ptr<FbxMesh> pMesh);
+		
 	};
-
+	
 	
 }

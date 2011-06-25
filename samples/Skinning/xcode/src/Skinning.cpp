@@ -50,6 +50,8 @@ void staticMouseDownHandler( MouseEvent event );
 void staticMouseUpHandler( MouseEvent event );
 
 void Skinning::setup() {
+	
+	mShaderPhong = gl::GlslProg(	loadResource( RES_PHONG_VERT_GLSL ),	loadResource( RES_PHONG_FRAG_GLSL ) );
 			
 	// Set params
 	mParams = params::InterfaceGl( "Parameters", Vec2i( 200, 400 ) );
@@ -67,7 +69,7 @@ void Skinning::setup() {
 	mShowParams = false;
 	mBoneID = mPrevBoneID = -1;
 	mDrawFilled = true;
-	
+	mDrawNormals = false;
 	// OpenGL Constants
 	
 	gl::enableDepthRead();
@@ -102,12 +104,14 @@ void Skinning::keyDown( KeyEvent event ) {
 		mFBXDrawer.resetRotations(pDrawable->meshes[0]);
 	if( event.getChar() == 'p' )
 		mShowParams = !mShowParams;
+	if( event.getChar() == 'n' )
+		mDrawNormals = !mDrawNormals;
 }
 
 void Skinning::update() {
 	
 	// Bone rotations
-	Matrix44f m = mTestBoneRot.toMatrix44();
+	Matrix44d m = mTestBoneRot.toMatrix44();
 	mFBXDrawer.rotateBone(pDrawable->meshes[0], mBoneID, m );
 }
 					
@@ -118,6 +122,7 @@ void Skinning::resetBones() {
 
 void Skinning::drawGeometry() {
 
+	glPushMatrix();
 	gl::rotate(gConfigScene.orientation);
 
 	gl::color(Color(0,0,0));
@@ -127,6 +132,20 @@ void Skinning::drawGeometry() {
 	glScalef(gConfigScene.scale, gConfigScene.scale, gConfigScene.scale);
 	mFBXDrawer.draw(pDrawable);
 	glPopMatrix();
+	glPopMatrix();
+}
+
+void Skinning::drawNormals() {
+
+	glPushMatrix();
+	// Draw Normals
+	gl::rotate(gConfigScene.orientation);
+	glPushMatrix();
+	glScalef(gConfigScene.scale, gConfigScene.scale, gConfigScene.scale);
+	mFBXDrawer.drawNormals(pDrawable);
+	glPopMatrix();
+	glPopMatrix();
+	
 }
 
 
@@ -138,7 +157,27 @@ void Skinning::draw()
 	mCam.setPerspective( 60, getWindowAspectRatio(), 0.01, 500 );
 	gl::setMatrices( mCam );
 	
+	
+	glEnable(GL_LIGHT0);
+	
+	GLfloat pos[] = {0.0, 2.0, 15.0, 1.0};
+	GLfloat diff[] = {1.0, 1.0, 1.0, 1.0};
+	
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diff);
+	
+	mShaderPhong.bind();
+	mShaderPhong.uniform("shininess",128.0f);
+	mShaderPhong.uniform("tex",0);
+	
+	
 	drawGeometry();
+	
+	mShaderPhong.unbind();
+	glDisable(GL_LIGHT0);
+	
+	if (mDrawNormals)
+		drawNormals();
 	
 	// Params
 	if (mShowParams){

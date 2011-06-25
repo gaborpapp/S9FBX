@@ -31,6 +31,10 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		8F185B7012EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
 		8F185B7112EF0E2000E74C28 /* libfbxsdk_20113.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */; };
+		8F2F1D9613B4D6310058C055 /* phong.frag in Sources */ = {isa = PBXBuildFile; fileRef = 8F2F1D9413B4D6310058C055 /* phong.frag */; };
+		8F2F1D9713B4D6310058C055 /* phong.vert in Sources */ = {isa = PBXBuildFile; fileRef = 8F2F1D9513B4D6310058C055 /* phong.vert */; };
+		8F2F1D9813B4D6310058C055 /* phong.frag in Resources */ = {isa = PBXBuildFile; fileRef = 8F2F1D9413B4D6310058C055 /* phong.frag */; };
+		8F2F1D9913B4D6310058C055 /* phong.vert in Resources */ = {isa = PBXBuildFile; fileRef = 8F2F1D9513B4D6310058C055 /* phong.vert */; };
 		8F36E4A4137DE6C90036A1AB /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A3137DE6C90036A1AB /* CinderApp.icns */; };
 		8F36E4A5137DE6C90036A1AB /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A3137DE6C90036A1AB /* CinderApp.icns */; };
 		8F36E4A9137DE7B20036A1AB /* skinning_config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 8F36E4A8137DE7B20036A1AB /* skinning_config.xml */; };
@@ -135,6 +139,9 @@
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Skinning.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Skinning.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F185B6F12EF0E2000E74C28 /* libfbxsdk_20113.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk_20113.dylib; path = /Applications/Autodesk/FBXSDK20113/lib/gcc4/libfbxsdk_20113.dylib; sourceTree = "<absolute>"; };
+		8F2F1D9413B4D6310058C055 /* phong.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = phong.frag; sourceTree = "<group>"; };
+		8F2F1D9513B4D6310058C055 /* phong.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = phong.vert; sourceTree = "<group>"; };
+		8F2F1DA113B4D68F0058C055 /* resources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = resources.h; path = include/resources.h; sourceTree = "<group>"; };
 		8F36627312E0E0DC00FB5340 /* Skinning.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Skinning.h; path = include/Skinning.h; sourceTree = "<group>"; };
 		8F36E47F137DE6710036A1AB /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Common.h; path = ../../../include/Common.h; sourceTree = SOURCE_ROOT; };
 		8F36E480137DE6710036A1AB /* S9FbxLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = S9FbxLoader.h; path = ../../../include/S9FbxLoader.h; sourceTree = SOURCE_ROOT; };
@@ -286,6 +293,7 @@
 			children = (
 				8F36627312E0E0DC00FB5340 /* Skinning.h */,
 				8F727E2412E0BC7100EBCA42 /* config.h */,
+				8F2F1DA113B4D68F0058C055 /* resources.h */,
 			);
 			name = Include;
 			sourceTree = "<group>";
@@ -293,6 +301,8 @@
 		8F36E4C7137DE80A0036A1AB /* Sinbad */ = {
 			isa = PBXGroup;
 			children = (
+				8F2F1D9413B4D6310058C055 /* phong.frag */,
+				8F2F1D9513B4D6310058C055 /* phong.vert */,
 				8F36E4BB137DE8020036A1AB /* sinbad_body.tga */,
 				8F36E4BC137DE8020036A1AB /* sinbad_clothes.tga */,
 				8F36E4BD137DE8020036A1AB /* sinbad_sword.tga */,
@@ -403,6 +413,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F2F1D9813B4D6310058C055 /* phong.frag in Resources */,
+				8F2F1D9913B4D6310058C055 /* phong.vert in Resources */,
 				8F36E4A5137DE6C90036A1AB /* CinderApp.icns in Resources */,
 				8F36E4AA137DE7B20036A1AB /* skinning_config.xml in Resources */,
 				8F36E4C3137DE8020036A1AB /* sinbad_body.tga in Resources */,
@@ -423,6 +435,8 @@
 				8FD1936713A2241B00342024 /* Common.cxx in Sources */,
 				8FD1936813A2241B00342024 /* S9FbxDrawer.cpp in Sources */,
 				8FD1936913A2241B00342024 /* S9FbxLoader.cpp in Sources */,
+				8F2F1D9613B4D6310058C055 /* phong.frag in Sources */,
+				8F2F1D9713B4D6310058C055 /* phong.vert in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -523,11 +537,11 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SYSTEM_APPS_DIR)/Autodesk/FBXSDK20113/lib/gcc4\"",
+					"\"$(FBX_SDK)/lib/gcc4\"",
 				);
 				OTHER_LDFLAGS = ../../../../../lib/libcinder_d.a;
 				PRODUCT_NAME = Skinning;
-				USER_HEADER_SEARCH_PATHS = "/Applications/Autodesk/FBXSDK20113/include $(CINDER_PATH)/include";
+				USER_HEADER_SEARCH_PATHS = "$(FBX_SDK)/include $(CINDER_PATH)/include";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = YES;
 			};
@@ -567,6 +581,7 @@
 			buildSettings = {
 				ARCHS = i386;
 				CINDER_PATH = ../../../../..;
+				FBX_SDK = /Applications/Autodesk/FBXSDK20113;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(CINDER_PATH)/boost";
@@ -582,13 +597,14 @@
 			buildSettings = {
 				ARCHS = i386;
 				CINDER_PATH = ../../..;
+				FBX_SDK = /Applications/Autodesk/FBXSDK20113;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(CINDER_PATH)/boost";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
-				USER_HEADER_SEARCH_PATHS = "/Applications/Autodesk/FBXSDK20113/include $(CINDER_PATH)/include";
+				USER_HEADER_SEARCH_PATHS = "$(FBX_SDK)/include $(CINDER_PATH)/include";
 			};
 			name = Release;
 		};

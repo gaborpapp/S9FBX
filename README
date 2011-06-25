@@ -11,6 +11,8 @@ FBX Loader and Drawer - With Skinning and Bones support!
 
 Yup, this is my first attempt at a Cinder plugin. Currently, it is OSX only BUT I'll be fixing that for Windows in the nearfuture. It will probably work but you'll need to link against a different FBX Library than the one included.
 
+This has been tested against the 20113 version of the SDK and works quite well. I havent tried any others yet.
+
 The FBX file-format has an awful lot in it, such as support for canned animation, different materials, rigs, you name it. This set of classes only just scratch the surface. To learn more about FBX check out: http://usa.autodesk.com/adsk/servlet/index?siteID=123112&id=7478532
 
 Wikipedia also has a good overview as well. Essentially, if you need models that are more complicated than an OBJ, don't bother with Collada or anything else. Just use FBX. It's easier!

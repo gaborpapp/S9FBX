@@ -4,7 +4,7 @@
   /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
   \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
  /____  >\___  >\___  >__| |__|\____/|___|  //____/  .co.uk
-	  \/     \/     \/                    \/         
+      \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
  
@@ -42,6 +42,8 @@
 
 #include "S9FbxLoader.h"
 
+using namespace std;
+
 namespace S9{
 	
 	
@@ -53,7 +55,7 @@ namespace S9{
 		meshes.clear();
 		materials.clear();
 		mMapToTex.clear();
-	
+		
 	}
 	
 	
@@ -68,7 +70,7 @@ namespace S9{
 	
 	shared_ptr<FbxDrawable> S9FbxLoader::load(string fileName){
 		
-
+		
 		shared_ptr<FbxDrawable> drawable(new FbxDrawable());
 		
 		mFileName = fileName.substr(fileName.find_last_of("/") + 1); // Guess is linux / mac only then!
@@ -112,12 +114,12 @@ namespace S9{
 					setupForCinder(drawable);
 					
 					// TODO - animation and poses from the previous example need to be here
-			
+					
 				}
 				else{
 					app::console() << "S9FBXLoader - Unable to import file " << endl;
 				}
-			
+				
 			}
 			else{
 				app::console() << "S9FBXLoader - Unable to open file " << mImporter->GetLastErrorString();
@@ -193,10 +195,10 @@ namespace S9{
 	// create what we need in memory and ditch the rest. We need to get the vertices and 
 	// what not out in arrays anyway so we can use VBOs and shaders for skinning and for
 	// bullet physics
-
+	
 	void S9FbxLoader::setupForCinder(shared_ptr<FbxDrawable>  pDrawable) {
 		KFbxXMatrix lDummyGlobalPosition;
-
+		
 		int i, lCount = mScene->GetRootNode()->GetChildCount();
 		
 		for (i = 0; i < lCount; i++){
@@ -227,15 +229,23 @@ namespace S9{
 				pMesh->mMax.x = pMesh->mMax.y = pMesh->mMax.z = -10000000.0;
 				
 				setupForCinderMesh(pDrawable, pNode,globalPosition, pMesh);
-				setupForCinderDeformations(pDrawable, globalPosition,(KFbxMesh*)lNodeAttribute,pMesh);
-			
+				
+				int lSkinCount = ((KFbxMesh*)lNodeAttribute)->GetDeformerCount(KFbxDeformer::eSKIN);
+				if (lSkinCount > 0) {
+					setupForCinderDeformations(pDrawable, globalPosition,(KFbxMesh*)lNodeAttribute,pMesh);
+					pMesh->mDeform = true;
+				}
+				else {
+					pMesh->mDeform = false;
+				}
+				
 				
 			} else if (lNodeAttribute->GetAttributeType() == KFbxNodeAttribute::eSKELETON){
 				setupForCinderSkeleton(pDrawable, pNode,globalPosition);
 			}
 		}
 		
-			
+		
 		int i, lCount = pNode->GetChildCount();
 		for (i = 0; i < lCount; i++){
 			setupForCinderRecursive(pDrawable, pNode->GetChild(i), globalPosition);
@@ -268,20 +278,20 @@ namespace S9{
 			pMesh->numtris = polygonCount;
 			pMesh->numverts = vertexCount;
 			
-		
 			// Indicies
 			int* pindices = lMesh->GetPolygonVertices();
 			for (int i =0; i < indiciesCount; ++i){
 				pMesh->indicies.push_back(pindices[i]);
 			}
 			
-		
+			
 			// Vertices (and a copy of skinned vertices and matrices as well)
 			
 			bool sv = lMesh->GetDeformerCount(KFbxDeformer::eSKIN) > 0;
 			if (sv) {
 				pMesh->skinvertices.reserve(vertexCount);
 				pMesh->skinmatrices.reserve(vertexCount);
+				pMesh->skinnormals.reserve(vertexCount);
 			}
 			
 			KFbxVector4* pvertices = lMesh->GetControlPoints();
@@ -290,7 +300,7 @@ namespace S9{
 			
 			for (int i =0; i < vertexCount; ++i){
 				
-				Vec3f vert = Vec3f(pvertices[i][0],pvertices[i][1],pvertices[i][2]);
+				Vec3d vert = Vec3d(pvertices[i][0],pvertices[i][1],pvertices[i][2]);
 				
 				// Set min and max values
 				if ( vert.x < pMesh->mMin.x) pMesh->mMin.x = vert.x;
@@ -304,14 +314,14 @@ namespace S9{
 				
 				if (mApplyMatrices)
 					vert = pMesh->offset * vert;
-	
+				
 				pMesh->vertices.push_back( vert ) ;
 				
 				
-		
+				
 				if (sv) {
 					pMesh->skinvertices.push_back( vert ) ;
-					Matrix44f m(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0); // If we arent using additive or total in FBX Matrices
+					Matrix44d m(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0); // If we arent using additive or total in FBX Matrices
 					pMesh->skinmatrices.push_back(m);
 					pMesh->skinweights.push_back(0.0);
 				}
@@ -325,17 +335,21 @@ namespace S9{
 			if (normalStatus) {
 				for (int i =0; i < vertexCount; ++i){
 					
-					Vec3f norm (lNormals->GetAt(i)[0],lNormals->GetAt(i)[1],lNormals->GetAt(i)[2]);
+					Vec3d norm (lNormals->GetAt(i)[0],lNormals->GetAt(i)[1],lNormals->GetAt(i)[2]);
 					
 					if (mApplyMatrices)
 						norm = pMesh->offset * norm;
 					
 					pMesh->normals.push_back( norm ) ;
+					if (sv) {
+						pMesh->skinnormals.push_back(norm);
+					}
 				}
 			}
-		
+			
+			
 			// Textures
-		
+			
 			KFbxLayerElement::EMappingMode lMappingMode = KFbxLayerElement::eNONE;
 			KFbxLayerElementArrayTemplate<KFbxVector2>* lUVArray = NULL;
 			lMesh->GetTextureUV(&lUVArray, KFbxLayerElement::eDIFFUSE_TEXTURES);
@@ -368,7 +382,7 @@ namespace S9{
 						lCurrentUVIndex = lMesh->GetTextureUVIndex(i, j);
 					else 
 						lCurrentUVIndex = lMesh->GetPolygonVertex(i, j);
-				
+					
 					pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].x = (float)lUVArray->GetAt(lCurrentUVIndex)[0];
 					pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].y = 1.0 - (float)lUVArray->GetAt(lCurrentUVIndex)[1];
 					
@@ -382,18 +396,18 @@ namespace S9{
 		
 	}
 	
-
+	
 	void S9FbxLoader::setupForCinderDeformations(shared_ptr<FbxDrawable> pDrawable, KFbxXMatrix& pGlobalPosition,  KFbxMesh* pMesh, shared_ptr<FbxMesh> pCinderMesh) {
-		
-		KFbxCluster::ELinkMode lClusterMode = ((KFbxSkin*)pMesh->GetDeformer(0, KFbxDeformer::eSKIN))->GetCluster(0)->GetLinkMode();
 		
 		int lSkinCount = pMesh->GetDeformerCount(KFbxDeformer::eSKIN);
 		
-		
 		if (lSkinCount > 0) {
 			
+			KFbxCluster::ELinkMode lClusterMode = ((KFbxSkin*)pMesh->GetDeformer(0, KFbxDeformer::eSKIN))->GetCluster(0)->GetLinkMode();
+			
+			
 			map< shared_ptr<FbxRotation>, KFbxNode*> cinderToFBX;
-
+			
 			// TODO - Just use the first skin for now!	
 			
 			int numClusters = ((KFbxSkin *) pMesh->GetDeformer(0, KFbxDeformer::eSKIN))->GetClusterCount();
@@ -403,11 +417,11 @@ namespace S9{
 			for (int i = 0; i < numClusters; ++i){
 				shared_ptr<FbxCluster> cinderCluster(new FbxCluster);
 				pCinderMesh->clusters.push_back(cinderCluster);
-			
+				
 				KFbxCluster* fbxCluster = ((KFbxSkin *) pMesh->GetDeformer(0, KFbxDeformer::eSKIN))->GetCluster(i);
 				if (!fbxCluster->GetLink()) // this is actual bone - GetLink
 					continue;
-			
+				
 				cinderCluster->mode = lClusterMode;
 				
 				// Matrices
@@ -449,45 +463,45 @@ namespace S9{
 				
 				cinderToFBX[b] = fbxCluster->GetLink();
 				
-			
+				
 				// Apply the Matrices
 				
-				Matrix44f m = toCinderMatrix(lClusterGlobalCurrentPosition);
+				Matrix44d m = toCinderMatrix(lClusterGlobalCurrentPosition);
 				b->baseMatrix = m;
-				b->realMatrix = shared_ptr<Matrix44f>( new Matrix44f(m) );
+				b->realMatrix = shared_ptr<Matrix44d>( new Matrix44d(m) );
 				
 				
-				Matrix44f pr = toCinderMatrix(lReferenceGlobalCurrentPosition.Inverse());
-				Matrix44f ps = toCinderMatrix(lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition);
+				Matrix44d pr = toCinderMatrix(lReferenceGlobalCurrentPosition.Inverse());
+				Matrix44d ps = toCinderMatrix(lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition);
 				cinderCluster->transform = b->realMatrix;
 				cinderCluster->pretransform = pr;
 				cinderCluster->posttransform = ps;
 				
-			/*	if (mApplyMatrices) {
-					b->baseMatrix = pCinderMesh->offset * b->baseMatrix * pCinderMesh->offset.inverted();
-					b->realMatrix = pCinderMesh->offset * b->realMatrix * pCinderMesh->offset.inverted();
-					
-					cinderCluster->pretransform = pCinderMesh->offset * cinderCluster->pretransform * pCinderMesh->offset.inverted();
-					cinderCluster->posttransform = pCinderMesh->offset *  cinderCluster->posttransform * pCinderMesh->offset.inverted();
-				}*/
+				/*	if (mApplyMatrices) {
+				 b->baseMatrix = pCinderMesh->offset * b->baseMatrix * pCinderMesh->offset.inverted();
+				 b->realMatrix = pCinderMesh->offset * b->realMatrix * pCinderMesh->offset.inverted();
+				 
+				 cinderCluster->pretransform = pCinderMesh->offset * cinderCluster->pretransform * pCinderMesh->offset.inverted();
+				 cinderCluster->posttransform = pCinderMesh->offset *  cinderCluster->posttransform * pCinderMesh->offset.inverted();
+				 }*/
 				
-
+				
 				// Setup the Indices and weights - it SHOULD be indices and weights for the matrices we currently have
 				
 				int numIndicies = fbxCluster->GetControlPointIndicesCount();
 				
 				
-				Vec3f centre (0,0,0);
+				Vec3d centre (0,0,0);
 				
-				cinderCluster->mMax = Vec3f(-1e10,-1e10,-1e10);
-				cinderCluster->mMin = Vec3f(1e10,1e10,1e10);
-		
+				cinderCluster->mMax = Vec3d(-1e10,-1e10,-1e10);
+				cinderCluster->mMin = Vec3d(1e10,1e10,1e10);
+				
 				
 				for (int j =0; j < numIndicies; ++j){
 					cinderCluster->indicies.push_back(fbxCluster->GetControlPointIndices()[j]);
 					cinderCluster->weights.push_back(fbxCluster->GetControlPointWeights()[j]);
 					
-					Vec3f vert = pCinderMesh->vertices[fbxCluster->GetControlPointIndices()[j]];
+					Vec3d vert = pCinderMesh->vertices[fbxCluster->GetControlPointIndices()[j]];
 					
 					cinderCluster->mMax.x = vert.x > cinderCluster->mMax.x ? vert.x : cinderCluster->mMax.x;
 					cinderCluster->mMax.y = vert.y > cinderCluster->mMax.y ? vert.y : cinderCluster->mMax.y;
@@ -501,14 +515,14 @@ namespace S9{
 					
 				}
 				
-				if (centre != Vec3f::zero()){
+				if (centre != Vec3d::zero()){
 					cinderCluster->mCentre = centre * 1.0 / static_cast<float>(numIndicies);
 				}
 				else {
 					cinderCluster->mCentre = centre;
 				}
-
-
+				
+				
 				
 			}
 			
@@ -527,6 +541,7 @@ namespace S9{
 				}
 			}
 		}
+		
 	}
 	
 	
@@ -537,15 +552,15 @@ namespace S9{
 #pragma mark misc function
 	
 	
-	ci::Matrix44f S9FbxLoader::toCinderMatrix(KFbxXMatrix m) {
+	ci::Matrix44d S9FbxLoader::toCinderMatrix(KFbxXMatrix m) {
 		
-		ci::Matrix44f r;
+		ci::Matrix44d r;
 		
-		float * dst = (float*) &r;
+		double * dst = (double*) &r;
 		double * src = (double*)&m;
 		
 		for(int i = 0; i < 16; i++){
-			*dst = static_cast<float>( *src );
+			*dst = static_cast<double>( *src );
 			//*dst = (float) *src;
 			dst++;
 			src++;
@@ -554,11 +569,11 @@ namespace S9{
 		return r;
 	}
 	
-	KFbxXMatrix S9FbxLoader::toFBXMatrix(ci::Matrix44f m) {
+	KFbxXMatrix S9FbxLoader::toFBXMatrix(ci::Matrix44d m) {
 		
 		KFbxXMatrix r;
 		double * dst = (double*)&r;
-		float * src = (float*)&m;
+		double * src = (double*)&m;
 		
 		for(int i = 0; i < 16; i++){
 			*dst = static_cast<double>( *src);
@@ -567,7 +582,7 @@ namespace S9{
 		}
 		return r;
 	}
-		
+	
 	
 	// ********************************************************************************
 	// Texture Methods
@@ -636,11 +651,11 @@ namespace S9{
 							
 							if (lMaterial->GetClassId().Is(KFbxSurfaceLambert::ClassId)) {
 								KFbxPropertyDouble3 lKFbxDouble3 =((KFbxSurfaceLambert *)lMaterial)->GetDiffuseColor();
-								material->colour = Vec3f(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
+								material->colour = Vec3d(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
 							}
 							else if (lMaterial->GetClassId().Is(KFbxSurfacePhong::ClassId)){
 								KFbxPropertyDouble3 lKFbxDouble3 =((KFbxSurfacePhong *) lMaterial)->GetDiffuseColor();
-								material->colour = Vec3f(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
+								material->colour = Vec3d(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
 							}
 							
 							pDrawable->materials.push_back(material);	// Hopefully this index matches
@@ -676,6 +691,6 @@ namespace S9{
 		pDrawable->mMapToTex[textureFileName] = texture;
 		return texture;
 	}
-		
+	
 	
 } // End Namespace S9

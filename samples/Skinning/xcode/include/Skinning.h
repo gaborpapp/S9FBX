@@ -61,6 +61,7 @@
 #include "S9FbxLoader.h"
 #include "S9FbxDrawer.h"
 #include "config.h"
+#include "resources.h"
 
 
 using namespace ci;
@@ -80,6 +81,7 @@ protected:
 	
 	void resize( ResizeEvent event );
 	void drawGeometry();
+	void drawNormals(); 
 	void update();
 	void resetBones();
 	
@@ -98,10 +100,13 @@ protected:
 	// Font for FPS
 	Font				mFont;
 	
+	gl::GlslProg		mShaderPhong;
+	
 	// FBX Stuff
 	S9::S9FbxLoader		mFBXLoader;
 	S9::S9FbxDrawer		mFBXDrawer;
 	bool				mDrawFilled;
+	bool				mDrawNormals;
 	
 	shared_ptr<S9::FbxDrawable>	pDrawable;
 	

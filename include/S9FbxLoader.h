@@ -1,10 +1,10 @@
 /*
-                       __  .__              ________ 
-   ______ ____   _____/  |_|__| ____   ____/   __   \
-  /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
-  \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
+ __  .__              ________ 
+ ______ ____   _____/  |_|__| ____   ____/   __   \
+ /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
+ \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
  /____  >\___  >\___  >__| |__|\____/|___|  //____/  .co.uk
-      \/     \/     \/                    \/         
+ \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
  
@@ -59,7 +59,6 @@
 #include <list>
 #include "Common.h"
 
-using namespace std;
 using namespace cinder;
 using namespace ci;
 
@@ -69,11 +68,12 @@ namespace S9 {
 	class FbxRotation{
 	public:
 		
-		Matrix44f				baseMatrix;
-		shared_ptr<Matrix44f>	realMatrix;	// Shared pointer here too keeps the right matrix in the right place
-		Matrix44f				rotMatrix;
+		Matrix44d					baseMatrix;
+		std::shared_ptr<Matrix44d>	realMatrix;	// Shared pointer here too keeps the right matrix in the right place
+		Matrix44d					rotMatrix;
+		Matrix44d					normalMatrix;
 		
-		shared_ptr<FbxRotation>	parent;
+		std::shared_ptr<FbxRotation>	parent;
 		bool					targeted;
 		
 	};
@@ -81,27 +81,27 @@ namespace S9 {
 	class FbxCluster {
 		
 	public:
-		Matrix44f					pretransform;	// For skinning with bones, our matrix comes inbetween
-		Matrix44f					posttransform;
-		shared_ptr<Matrix44f>		transform;
+		Matrix44d					pretransform;	// For skinning with bones, our matrix comes inbetween
+		Matrix44d					posttransform;
+		std::shared_ptr<Matrix44d>		transform;
 		
 		KFbxCluster::ELinkMode		mode;
 		
-		shared_ptr<FbxRotation>		bone;
-		vector<int>					indicies;
-		vector<float>				weights;
+		std::shared_ptr<FbxRotation>		bone;
+		std::vector<int>					indicies;
+		std::vector<float>				weights;
 		
 		// Extents of this cluster
-		Vec3f mMax;
-		Vec3f mMin;
-		Vec3f mCentre;	
+		Vec3d mMax;
+		Vec3d mMin;
+		Vec3d mCentre;	
 		
 	};
 	
 	
 	class FbxMaterial {
 	public:
-		ci::Vec3f		colour;
+		ci::Vec3d		colour;
 		gl::Texture		tex;	// Set as a reference to the other textures in our internal struct
 		bool			isTextured;
 		
@@ -113,30 +113,33 @@ namespace S9 {
 	class FbxMesh {
 		
 	public:
-		vector<Vec3f>		vertices;
-		vector<Vec3f>		skinvertices;
-		vector<float>		skinweights;
-		vector<Matrix44f>	skinmatrices;
+		std::vector<Vec3d>		vertices;
+		std::vector<Vec3d>		skinvertices;
+		std::vector<float>		skinweights;
+		std::vector<Matrix44d>	skinmatrices;
 		
 		float*				floats;
-	
-		vector<Vec3f>		normals;
-		vector<Vec2f>		texcoords;
-		vector<int>			indicies;		// Maybe need a long for that?
-		vector<int>			matindicies;	// per triangle! (we assume triangles here)
-	
-		ci::Matrix44f		offset;
+		
+		std::vector<Vec3d>		normals;
+		std::vector<Vec3d>		skinnormals;
+		std::vector<Vec2d>		texcoords;
+		std::vector<int>			indicies;		// Maybe need a long for that?
+		std::vector<int>			matindicies;	// per triangle! (we assume triangles here)
+		
+		ci::Matrix44d		offset;
 		int					numtris;
 		int					numverts;
 		
-		vector< shared_ptr<FbxCluster> > clusters;
-		vector< shared_ptr<FbxRotation> > bones;
+		std::vector< std::shared_ptr<FbxCluster> > clusters;
+		std::vector< std::shared_ptr<FbxRotation> > bones;
 		
 		// Extents of this Mesh
-		Vec3f mMax;
-		Vec3f mMin;
+		Vec3d mMax;
+		Vec3d mMin;
 		
 		bool applyMatrices;
+		
+		bool mDeform;
 		
 	};
 	
@@ -147,9 +150,9 @@ namespace S9 {
 		
 		virtual ~FbxDrawable();
 		
-		vector< shared_ptr<FbxMesh> > meshes;
-		vector< shared_ptr<FbxMaterial> > materials;
-		map<std::string, gl::Texture>	mMapToTex;
+		std::vector< std::shared_ptr<FbxMesh> > meshes;
+		std::vector< std::shared_ptr<FbxMaterial> > materials;
+		std::map<std::string, gl::Texture>	mMapToTex;
 		
 	};
 	
@@ -161,11 +164,11 @@ namespace S9 {
 	public:
 		
 		S9FbxLoader();
-		shared_ptr<FbxDrawable> load(string fileName);
+		std::shared_ptr<FbxDrawable> load(std::string fileName);
 		virtual ~S9FbxLoader();
 		bool	isApplyMatrices() {return mApplyMatrices;};
-
-		ci::Matrix44f	getGlobalOffset();
+		
+		ci::Matrix44d	getGlobalOffset();
 		
 	protected:
 		
@@ -176,26 +179,26 @@ namespace S9 {
 		
 		// Setup for Cinder Functions
 		
-		void setupForCinder(shared_ptr<FbxDrawable>  pDrawable);
-		void setupForCinderRecursive(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition);
-		void setupForCinderSkeleton(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition);
-		void setupForCinderMesh(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition,  shared_ptr<FbxMesh> pMesh);
-		void setupForCinderDeformations(shared_ptr<FbxDrawable>  pDrawable,KFbxXMatrix& pGlobalPosition,  KFbxMesh* pMesh, shared_ptr<FbxMesh> pCinderMesh); 
+		void setupForCinder(std::shared_ptr<FbxDrawable>  pDrawable);
+		void setupForCinderRecursive(std::shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition);
+		void setupForCinderSkeleton(std::shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition);
+		void setupForCinderMesh(std::shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition,  std::shared_ptr<FbxMesh> pMesh);
+		void setupForCinderDeformations(std::shared_ptr<FbxDrawable>  pDrawable,KFbxXMatrix& pGlobalPosition,  KFbxMesh* pMesh, std::shared_ptr<FbxMesh> pCinderMesh); 
 		
 		// texture and materials
-		void loadSupportedMaterials(shared_ptr<FbxDrawable>  pDrawable);
-		void loadSupportedMaterialsRecursive(KFbxNode* pNode, shared_ptr<FbxDrawable>  pDrawable);
-		gl::Texture loadTexture(KFbxTexture* pTexture, shared_ptr<FbxDrawable>  pDrawable);
-					
+		void loadSupportedMaterials(std::shared_ptr<FbxDrawable>  pDrawable);
+		void loadSupportedMaterialsRecursive(KFbxNode* pNode, std::shared_ptr<FbxDrawable>  pDrawable);
+		gl::Texture loadTexture(KFbxTexture* pTexture, std::shared_ptr<FbxDrawable>  pDrawable);
+		
 		
 		KArrayTemplate<gl::Texture>		mTextureArray;
-	
-		// Cinder Related
-		ci::Matrix44f				toCinderMatrix(KFbxXMatrix m);
-		KFbxXMatrix					toFBXMatrix(ci::Matrix44f  m);
 		
-		string			mFileName;
-		string			mPath;
+		// Cinder Related
+		ci::Matrix44d				toCinderMatrix(KFbxXMatrix m);
+		KFbxXMatrix					toFBXMatrix(ci::Matrix44d  m);
+		
+		std::string			mFileName;
+		std::string			mPath;
 		
 		bool			mApplyMatrices;
 		
@@ -205,7 +208,7 @@ namespace S9 {
 		
 		
 		KTime mPeriod, mStart, mStop, mCurrentTime; // TODO - Not used yet but will be for animation
-	
+		
 	};
 	
 } // End Namespace S9

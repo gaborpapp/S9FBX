@@ -7,7 +7,7 @@
       \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
- 
+ f
  
  S9FbxDrawer.cpp | Part of S9FBX | Created 01/06/2011
  
@@ -43,11 +43,13 @@
 #include "S9FbxDrawer.h"
 
 
+using namespace std;
+
 namespace S9 {
 	
 	
 #pragma mark S9FbxDrawer Class
-
+	
 	void S9FbxDrawer::draw(shared_ptr<FbxDrawable> drawable) {
 		
 		// Draw Normally
@@ -63,71 +65,129 @@ namespace S9 {
 			}
 			
 			
-			applyRotations(pMesh);
+			if (pMesh->mDeform) applyRotations(pMesh);
 			
-			int matid = -1;
-			int *ip = (int*)&pMesh->indicies.at(0);
-		
-			for (int i =0; i < pMesh->numtris; i ++){
-				matid = pMesh->matindicies[i];
+			if (pMesh->indicies.size() >0 ){
+				int matid = -1;
+				int *ip = (int*)&pMesh->indicies.at(0);
 				
-				if (matid >= 0) {
-					if (drawable->materials[matid]->isTextured) {
-						drawable->materials[matid]->tex.bind();
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				for (int i =0; i < pMesh->numtris; i ++){
+					matid = pMesh->matindicies[i];
+					
+					if (matid >= 0) {
+						if (drawable->materials[matid]->isTextured) {
+							drawable->materials[matid]->tex.bind();
+							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+						}
+						
+						float r = drawable->materials[matid]->colour.x;
+						float g = drawable->materials[matid]->colour.y;
+						float b = drawable->materials[matid]->colour.z;
+						
+						glColor3f(r,g,b);
+						
+						// Full Materials For later! :D
+						//	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE, pDancer->mDancer.lMaterials[matid].glMat);
+						
+					}
+					glBegin(GL_TRIANGLES);
+					
+					int i0 = *ip; ++ip; int i1 = *ip; ++ip; int i2 = *ip; ++ip;
+					
+					Vec3d v0 = pMesh->vertices[i0];	Vec3d v1 = pMesh->vertices[i1];	Vec3d v2 = pMesh->vertices[i2];
+					if (pMesh->mDeform){ v0 = pMesh->skinvertices[i0];	v1 = pMesh->skinvertices[i1]; v2 = pMesh->skinvertices[i2]; }
+					
+					///\todo how are normals affected during the mesh warp process? -  do we need skin normals too?
+					
+					Vec3d n0 = pMesh->normals[i0];	Vec3d n1 = pMesh->normals[i1];	Vec3d n2 = pMesh->normals[i2];
+					if (pMesh->mDeform){ n0 = pMesh->skinnormals[i0]; n1 = pMesh->skinnormals[i1]; n2 = pMesh->skinnormals[i2]; }
+					
+					Vec2d t0 = pMesh->texcoords[i0]; Vec2d t1 = pMesh->texcoords[i1]; Vec2d t2 = pMesh->texcoords[i2];
+					
+					glNormal3f(n0.x,n0.y,n0.z); glTexCoord2d(t0.x, t0.y); glVertex3d(v0.x, v0.y, v0.z);
+					glNormal3f(n1.x,n1.y,n1.z); glTexCoord2d(t1.x, t1.y); glVertex3d(v1.x, v1.y, v1.z);
+					glNormal3f(n2.x,n2.y,n2.z); glTexCoord2d(t2.x, t2.y); glVertex3d(v2.x, v2.y, v2.z);
+					glEnd();
+					
+					if (matid >= 0) {
+						if (drawable->materials[matid]->isTextured)
+							drawable->materials[matid]->tex.unbind();
 					}
 					
-					float r = drawable->materials[matid]->colour.x;
-					float g = drawable->materials[matid]->colour.y;
-					float b = drawable->materials[matid]->colour.z;
-					
-					glColor3f(r,g,b);
-					
-					// Full Materials For later! :D
-					//	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE, pDancer->mDancer.lMaterials[matid].glMat);
-					
 				}
-				glBegin(GL_TRIANGLES);
-				
-				
-				int i0 = *ip; ++ip; int i1 = *ip; ++ip; int i2 = *ip; ++ip;
-				
-				Vec3f v0 = pMesh->skinvertices[i0];	Vec3f v1 = pMesh->skinvertices[i1];	Vec3f v2 = pMesh->skinvertices[i2];
-				
-				Vec3f n0 = pMesh->normals[i0];	Vec3f n1 = pMesh->normals[i1];	Vec3f n2 = pMesh->normals[i2];
-				Vec2f t0 = pMesh->texcoords[i0]; Vec2f t1 = pMesh->texcoords[i1]; Vec2f t2 = pMesh->texcoords[i2];
-				
-				glNormal3f(n0.x,n0.y,n0.z);  glTexCoord2f(t0.x, t0.y); glVertex3f(v0.x, v0.y, v0.z);
-				glNormal3f(n1.x,n1.y,n1.z);  glTexCoord2f(t1.x, t1.y); glVertex3f(v1.x, v1.y, v1.z);
-				glNormal3f(n2.x,n2.y,n2.z);  glTexCoord2f(t2.x, t2.y); glVertex3f(v2.x, v2.y, v2.z);
-				glEnd();
-				
-				if (matid >= 0) {
-					if (drawable->materials[matid]->isTextured)
-						drawable->materials[matid]->tex.unbind();
+				if (!pMesh->applyMatrices){
+					glPopMatrix();
 				}
-				
-
 			}
-			if (!pMesh->applyMatrices){
-				glPopMatrix();
-			}
-			
 		}
 		
 	}
 	
-	// TODO - This should really be a shader operation - it would be faster and no need to copy the vertices
+	void S9FbxDrawer::drawNormals(shared_ptr<FbxDrawable> drawable) {
+		
+		// Draw Normally
+		
+		for (vector< shared_ptr<FbxMesh> >::iterator it = drawable->meshes.begin(); it != drawable->meshes.end(); it ++){
+			
+			shared_ptr<FbxMesh> pMesh = *it;
+			
+			
+			if (!pMesh->applyMatrices){
+				glPushMatrix();
+				glMultMatrixf(pMesh->offset);
+			}
+			
+			
+			if (pMesh->mDeform) applyRotations(pMesh);
+			
+			if (pMesh->indicies.size() >0 ){
+				int matid = -1;
+				int *ip = (int*)&pMesh->indicies.at(0);
+				
+				for (int i =0; i < pMesh->numtris; i ++){
+		
+					glBegin(GL_LINES);
+					
+					glColor3f(1.0, 0, 0);
+					
+					int i0 = *ip; ++ip; int i1 = *ip; ++ip; int i2 = *ip; ++ip;
+					
+					Vec3d v0 = pMesh->vertices[i0];	Vec3d v1 = pMesh->vertices[i1];	Vec3d v2 = pMesh->vertices[i2];
+					if (pMesh->mDeform){ v0 = pMesh->skinvertices[i0];	v1 = pMesh->skinvertices[i1]; v2 = pMesh->skinvertices[i2]; }
+					
+					Vec3d n0 = pMesh->normals[i0];	Vec3d n1 = pMesh->normals[i1];	Vec3d n2 = pMesh->normals[i2];
+					if (pMesh->mDeform){ n0 = pMesh->skinnormals[i0]; n1 = pMesh->skinnormals[i1]; n2 = pMesh->skinnormals[i2]; }
+					
+					n0 += v0;
+					n1 += v1;
+					n2 += v2;
+					
+					glVertex3f(v0.x, v0.y, v0.z); glVertex3f(n0.x, n0.y, n0.z);
+					glVertex3f(v1.x, v1.y, v1.z); glVertex3f(n1.x, n1.y, n1.z);
+					glVertex3f(v2.x, v2.y, v2.z); glVertex3f(n2.x, n2.y, n2.z);
+					glEnd();
+					
+					
+				}
+				if (!pMesh->applyMatrices){
+					glPopMatrix();
+				}
+			}
+		}
+		
+	}
 	
-
+	///\todo - This should really be a shader operation - it would be faster and no need to copy the vertices
+	
+	
 	void S9FbxDrawer::applyRotations(shared_ptr<FbxMesh> pMesh) {
 		
 		//int clusterMode = pMesh->clusters[0]->mode;
 		
 		// set skin matrices to ALL ZEROS if not additive (which it is likely to be but we'll need to change that)
-		for (vector<Matrix44f>::iterator it = pMesh->skinmatrices.begin(); it != pMesh->skinmatrices.end(); it++){
-			(*it) = Matrix44f(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+		for (vector<Matrix44d>::iterator it = pMesh->skinmatrices.begin(); it != pMesh->skinmatrices.end(); it++){
+			(*it) = Matrix44d(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 		}
 		
 		// set skin weights to zero
@@ -141,10 +201,10 @@ namespace S9 {
 		for (int i = 0; i < pMesh->clusters.size(); ++i){
 			shared_ptr<FbxCluster> cinderCluster = pMesh->clusters[i];
 			
-			Matrix44f clusterMatrix;
+			Matrix44d clusterMatrix;
 			if ( pMesh->applyMatrices)
 				clusterMatrix = pMesh->offset * cinderCluster->pretransform * (*cinderCluster->transform) * cinderCluster->posttransform * pMesh->offset.inverted();
-				
+			
 			else	
 				clusterMatrix = cinderCluster->pretransform * (*cinderCluster->transform) * cinderCluster->posttransform;				
 			
@@ -161,14 +221,14 @@ namespace S9 {
 				if (w == 0.0)
 					continue;
 				
-				Matrix44f influenceMatrix = clusterMatrix * w;
-		
+				Matrix44d influenceMatrix = clusterMatrix * w;
+				
 				pMesh->skinmatrices[idx] = pMesh->skinmatrices[idx] + influenceMatrix;
 				pMesh->skinweights[idx] += w;
 				
 			}
 			
-		//	cinderCluster->mCentre = centre / cinderCluster->indicies.size();
+			//	cinderCluster->mCentre = centre / cinderCluster->indicies.size();
 		}
 		
 		pMesh->skinvertices = pMesh->vertices;
@@ -177,12 +237,13 @@ namespace S9 {
 		for (int i =0; i < pMesh->skinvertices.size(); ++i){
 			float w = pMesh->skinweights[i];
 			if (w != 0.0){
-				pMesh->skinvertices[i] = pMesh->skinmatrices[i] * pMesh->skinvertices[i];
+				pMesh->skinvertices[i] = pMesh->skinmatrices[i] * pMesh->vertices[i];
+				pMesh->skinnormals[i] = pMesh->skinmatrices[i].transformVec(pMesh->normals[i]);
 			}
 		}
 		
 		
-		// TODO - There is definitely a performance hit here. Can we perhaps do some things with that?
+		///\todo - There is definitely a performance hit here. Can we perhaps do some things with that?
 		
 		
 		for (int i = 0; i < pMesh->clusters.size(); ++i){
@@ -221,11 +282,7 @@ namespace S9 {
 			else {
 				cinderCluster->mCentre = centre;
 			}
-			
 		}
-		
-		
-		
 	}
 	
 	
@@ -233,6 +290,7 @@ namespace S9 {
 		
 		for (vector < shared_ptr<FbxRotation> >::iterator it = pMesh->bones.begin(); it != pMesh->bones.end(); it ++){
 			*(*it)->realMatrix = (*it)->baseMatrix;
+			(*it)->normalMatrix.setToIdentity();
 		}
 	}
 	
@@ -281,7 +339,7 @@ namespace S9 {
 			shared_ptr<FbxCluster> pCluster = *it;
 			
 			if (pCluster->mCentre != Vec3f::zero()) {
-			
+				
 				Vec3f dv = pCluster->mMax;
 				float d = dv.distance(pCluster->mMin);
 				
@@ -298,7 +356,7 @@ namespace S9 {
 	
 #pragma mark Bone Rotations
 	
-	void S9FbxDrawer::rotateBone(shared_ptr<FbxMesh> pMesh, int boneid, ci::Matrix44f &mat) {
+	void S9FbxDrawer::rotateBone(shared_ptr<FbxMesh> pMesh, int boneid, ci::Matrix44d &mat) {
 		if (boneid > -1 && boneid < pMesh->bones.size()) {
 			
 			shared_ptr<FbxRotation> pBone = pMesh->bones[boneid];
@@ -308,38 +366,41 @@ namespace S9 {
 					(*it)->targeted = false;
 				}
 				
-				Matrix44f tmp (pBone->rotMatrix);
-	
+				Matrix44d tmp (pBone->rotMatrix);
+				
 				tmp = tmp.inverted() * mat;
 				
 				pBone->rotMatrix = mat;
 				*pBone->realMatrix = *pBone->realMatrix  * tmp;
 				pBone->targeted = true;
 				
+				pBone->normalMatrix *= tmp;
+				
 				
 				for (vector < shared_ptr<FbxRotation> >::iterator it = pMesh->bones.begin(); it != pMesh->bones.end(); it ++){
 					if ((*it)->parent == pMesh->bones[boneid]){
-						rotateBoneRecursive(*it, pMesh->bones[boneid]->realMatrix, tmp, pMesh);
+						rotateBoneRecursive(*it, pMesh->bones[boneid]->realMatrix, tmp, mat, pMesh);
 					}
 				}
 			}
 		}
 	}
 	
-
 	
-	void S9FbxDrawer::rotateBoneRecursive(shared_ptr<FbxRotation> pRot, shared_ptr<Matrix44f> pmat, Matrix44f rmat, shared_ptr<FbxMesh> pMesh) {
+	
+	void S9FbxDrawer::rotateBoneRecursive(shared_ptr<FbxRotation> pRot, shared_ptr<Matrix44d> pmat, Matrix44d rmat, Matrix44d mat, shared_ptr<FbxMesh> pMesh) {
 		pRot->targeted = true;
-
+		pRot->normalMatrix *= rmat;
+		
 		*(pRot->realMatrix) =  (*pmat) * rmat * pmat->inverted() * (*pRot->realMatrix);
 		
 		for (vector < shared_ptr<FbxRotation> >::iterator it = pMesh->bones.begin(); it != pMesh->bones.end(); it ++){
 			if ((*it)->parent == pRot){
-				rotateBoneRecursive(*it, pmat, rmat, pMesh);
+				rotateBoneRecursive(*it, pmat, rmat, mat, pMesh);
 			}
 		}
 		
 	}
-
-
+	
+	
 }
