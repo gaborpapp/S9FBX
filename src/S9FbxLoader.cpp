@@ -8,24 +8,37 @@
  
  THE GHOST IN THE CSH
  
- 
- S9FbxLoader.cpp | Part of S9FBX | Created 03/02/2011
- 
- Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
- *** Section9 ***
+ */
+
+/**
+ * @brief	This loader class takes an FBX File path and returns a set of structures
+ *			that can be drawn in an indirection way (i.e, vertex indexed lists)
+ *			and a set of textures.
+ *
+ * @file	S9FbxLoader.cpp
+ * @author	Benjamin Blundell <oni@section9.co.uk>
+ * @date	27/06/2011
+ * Part of  FBX Block
+ * 
+ * @section LICENSE 
+ * 
+ * Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
+ * Section9 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Section9 nor the names of its contributors
- *       may be used to endorse or promote products derived from this software
- *       without specific prior written permission.
+ *	Redistributions of source code must retain the above copyright
+ *  notice, this list of conditions and the following disclaimer.
+ *  
+ *  Redistributions in binary form must reproduce the above copyright
+ *  notice, this list of conditions and the following disclaimer in the
+ *  documentation and/or other materials provided with the distribution.
+ *  
+ *  Neither the name of Section9 nor the names of its contributors
+ *  may be used to endorse or promote products derived from this software
+ *  without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -37,8 +50,9 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***********************************************************************/
+ * 
+ */
+
 
 #include "S9FbxLoader.h"
 
@@ -62,7 +76,6 @@ namespace S9{
 	
 	S9FbxLoader::S9FbxLoader() {
 		mCurrentTime = 0; // TODO - should be set to start when animation is done
-		mApplyMatrices = true;
 	}
 	
 	S9FbxLoader::~S9FbxLoader() {
@@ -223,8 +236,7 @@ namespace S9{
 				// Create a new Cinder Mesh
 				shared_ptr<FbxMesh> pMesh(new FbxMesh());
 				pDrawable->meshes.push_back(pMesh);
-				pMesh->applyMatrices = isApplyMatrices();
-				
+		
 				pMesh->mMin.x = pMesh->mMin.y = pMesh->mMin.z = 10000000.0;
 				pMesh->mMax.x = pMesh->mMax.y = pMesh->mMax.z = -10000000.0;
 				
@@ -311,14 +323,8 @@ namespace S9{
 				if ( vert.y > pMesh->mMax.y) pMesh->mMax.y = vert.y;
 				if ( vert.z > pMesh->mMax.z) pMesh->mMax.z = vert.z;
 				
-				
-				if (mApplyMatrices)
-					vert = pMesh->offset * vert;
-				
 				pMesh->vertices.push_back( vert ) ;
-				
-				
-				
+			
 				if (sv) {
 					pMesh->skinvertices.push_back( vert ) ;
 					Matrix44d m(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0); // If we arent using additive or total in FBX Matrices
@@ -337,9 +343,6 @@ namespace S9{
 					
 					Vec3d norm (lNormals->GetAt(i)[0],lNormals->GetAt(i)[1],lNormals->GetAt(i)[2]);
 					
-					if (mApplyMatrices)
-						norm = pMesh->offset * norm;
-					
 					pMesh->normals.push_back( norm ) ;
 					if (sv) {
 						pMesh->skinnormals.push_back(norm);
@@ -354,38 +357,43 @@ namespace S9{
 			KFbxLayerElementArrayTemplate<KFbxVector2>* lUVArray = NULL;
 			lMesh->GetTextureUV(&lUVArray, KFbxLayerElement::eDIFFUSE_TEXTURES);
 			
-			for (int i =0; i < vertexCount; ++i){
-				pMesh->texcoords.push_back( Vec2f(0,0) ) ;
-			}
+			if (lUVArray) {
 			
-			
-			for (int i = 0; i < polygonCount; ++i) {
-				
-				// Materials - Per Triangle
-				
-				for (int l = 0; l < lMesh->GetLayerCount(); l++) {
-					KFbxLayerElementMaterial* lLayerMaterial = lMesh->GetLayer(l)->GetMaterials();
-					if (lLayerMaterial) {
-						pNode->GetMaterial(lLayerMaterial->GetIndexArray().GetAt(l));
-						pMesh->matindicies.push_back(lLayerMaterial->GetIndexArray().GetAt(i));
-					}
+				for (int i =0; i < vertexCount; ++i){
+					pMesh->texcoords.push_back( Vec2f(0,0) ) ;
 				}
 				
-				for (int j = 0; j < 3; j++){
+				
+				for (int i = 0; i < polygonCount; ++i) {
 					
-					int lCurrentUVIndex;
+					// Materials - Per Triangle
 					
-					if(lMesh->GetLayer(0) && lMesh->GetLayer(0)->GetUVs())
-						lMappingMode = lMesh->GetLayer(0)->GetUVs()->GetMappingMode();
+					for (int l = 0; l < lMesh->GetLayerCount(); l++) {
+						KFbxLayerElementMaterial* lLayerMaterial = lMesh->GetLayer(l)->GetMaterials();
+						if (lLayerMaterial) {
+							pNode->GetMaterial(lLayerMaterial->GetIndexArray().GetAt(l));
+							pMesh->matindicies.push_back(lLayerMaterial->GetIndexArray().GetAt(i));
+						}
+					}
 					
-					if (lMappingMode == KFbxLayerElement::eBY_POLYGON_VERTEX)
-						lCurrentUVIndex = lMesh->GetTextureUVIndex(i, j);
-					else 
-						lCurrentUVIndex = lMesh->GetPolygonVertex(i, j);
-					
-					pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].x = (float)lUVArray->GetAt(lCurrentUVIndex)[0];
-					pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].y = 1.0 - (float)lUVArray->GetAt(lCurrentUVIndex)[1];
-					
+					for (int j = 0; j < 3; j++){
+						
+						int lCurrentUVIndex;
+						
+						if(lMesh->GetLayer(0) && lMesh->GetLayer(0)->GetUVs())
+							lMappingMode = lMesh->GetLayer(0)->GetUVs()->GetMappingMode();
+						
+						if (lMappingMode == KFbxLayerElement::eBY_POLYGON_VERTEX)
+							lCurrentUVIndex = lMesh->GetTextureUVIndex(i, j);
+						else 
+							lCurrentUVIndex = lMesh->GetPolygonVertex(i, j);
+						
+						if (lCurrentUVIndex != -1){
+				
+							pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].x = (float)lUVArray->GetAt(lCurrentUVIndex)[0];
+							pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].y = 1.0 - (float)lUVArray->GetAt(lCurrentUVIndex)[1];
+						}
+					}
 				}
 			}
 		}
@@ -476,16 +484,7 @@ namespace S9{
 				cinderCluster->transform = b->realMatrix;
 				cinderCluster->pretransform = pr;
 				cinderCluster->posttransform = ps;
-				
-				/*	if (mApplyMatrices) {
-				 b->baseMatrix = pCinderMesh->offset * b->baseMatrix * pCinderMesh->offset.inverted();
-				 b->realMatrix = pCinderMesh->offset * b->realMatrix * pCinderMesh->offset.inverted();
-				 
-				 cinderCluster->pretransform = pCinderMesh->offset * cinderCluster->pretransform * pCinderMesh->offset.inverted();
-				 cinderCluster->posttransform = pCinderMesh->offset *  cinderCluster->posttransform * pCinderMesh->offset.inverted();
-				 }*/
-				
-				
+
 				// Setup the Indices and weights - it SHOULD be indices and weights for the matrices we currently have
 				
 				int numIndicies = fbxCluster->GetControlPointIndicesCount();

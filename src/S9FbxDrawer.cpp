@@ -1,5 +1,5 @@
 /*
-					   __  .__              ________ 
+                       __  .__              ________ 
    ______ ____   _____/  |_|__| ____   ____/   __   \
   /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
   \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
@@ -7,25 +7,37 @@
       \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
- f
  
- S9FbxDrawer.cpp | Part of S9FBX | Created 01/06/2011
- 
- Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
- *** Section9 ***
+ */
+
+/**
+ * @brief	A set of classes that draw fbxdrawables.
+ *			
+ *
+ * @file	S9FbxDrawer.cpp
+ * @author	Benjamin Blundell <oni@section9.co.uk>
+ * @date	27/06/2011
+ * Part of  FBX Block
+ * 
+ * @section LICENSE 
+ * 
+ * Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
+ * Section9 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Section9 nor the names of its contributors
- *       may be used to endorse or promote products derived from this software
- *       without specific prior written permission.
+ *	Redistributions of source code must retain the above copyright
+ *  notice, this list of conditions and the following disclaimer.
+ *  
+ *  Redistributions in binary form must reproduce the above copyright
+ *  notice, this list of conditions and the following disclaimer in the
+ *  documentation and/or other materials provided with the distribution.
+ *  
+ *  Neither the name of Section9 nor the names of its contributors
+ *  may be used to endorse or promote products derived from this software
+ *  without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -37,8 +49,9 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***********************************************************************/
+ * 
+ */
+
 
 #include "S9FbxDrawer.h"
 
@@ -59,10 +72,8 @@ namespace S9 {
 			shared_ptr<FbxMesh> pMesh = *it;
 			
 			
-			if (!pMesh->applyMatrices){
-				glPushMatrix();
-				glMultMatrixf(pMesh->offset);
-			}
+			glPushMatrix();
+			glMultMatrixf(pMesh->offset);
 			
 			
 			if (pMesh->mDeform) applyRotations(pMesh);
@@ -72,53 +83,58 @@ namespace S9 {
 				int *ip = (int*)&pMesh->indicies.at(0);
 				
 				for (int i =0; i < pMesh->numtris; i ++){
-					matid = pMesh->matindicies[i];
-					
-					if (matid >= 0) {
-						if (drawable->materials[matid]->isTextured) {
-							drawable->materials[matid]->tex.bind();
-							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+					if (pMesh->matindicies.size() > 0){
+						matid = pMesh->matindicies[i];
+						
+						if (matid >= 0) {
+							if (drawable->materials[matid]->isTextured) {
+								drawable->materials[matid]->tex.bind();
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+							}
+							
+							float r = drawable->materials[matid]->colour.x;
+							float g = drawable->materials[matid]->colour.y;
+							float b = drawable->materials[matid]->colour.z;
+							
+							glColor3f(r,g,b);
+							
+							// Full Materials For later! :D
+							//	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE, pDancer->mDancer.lMaterials[matid].glMat);
+							
 						}
-						
-						float r = drawable->materials[matid]->colour.x;
-						float g = drawable->materials[matid]->colour.y;
-						float b = drawable->materials[matid]->colour.z;
-						
-						glColor3f(r,g,b);
-						
-						// Full Materials For later! :D
-						//	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE, pDancer->mDancer.lMaterials[matid].glMat);
-						
 					}
 					glBegin(GL_TRIANGLES);
 					
 					int i0 = *ip; ++ip; int i1 = *ip; ++ip; int i2 = *ip; ++ip;
 					
-					Vec3d v0 = pMesh->vertices[i0];	Vec3d v1 = pMesh->vertices[i1];	Vec3d v2 = pMesh->vertices[i2];
-					if (pMesh->mDeform){ v0 = pMesh->skinvertices[i0];	v1 = pMesh->skinvertices[i1]; v2 = pMesh->skinvertices[i2]; }
-					
-					///\todo how are normals affected during the mesh warp process? -  do we need skin normals too?
-					
-					Vec3d n0 = pMesh->normals[i0];	Vec3d n1 = pMesh->normals[i1];	Vec3d n2 = pMesh->normals[i2];
-					if (pMesh->mDeform){ n0 = pMesh->skinnormals[i0]; n1 = pMesh->skinnormals[i1]; n2 = pMesh->skinnormals[i2]; }
-					
-					Vec2d t0 = pMesh->texcoords[i0]; Vec2d t1 = pMesh->texcoords[i1]; Vec2d t2 = pMesh->texcoords[i2];
-					
-					glNormal3f(n0.x,n0.y,n0.z); glTexCoord2d(t0.x, t0.y); glVertex3d(v0.x, v0.y, v0.z);
-					glNormal3f(n1.x,n1.y,n1.z); glTexCoord2d(t1.x, t1.y); glVertex3d(v1.x, v1.y, v1.z);
-					glNormal3f(n2.x,n2.y,n2.z); glTexCoord2d(t2.x, t2.y); glVertex3d(v2.x, v2.y, v2.z);
-					glEnd();
-					
-					if (matid >= 0) {
-						if (drawable->materials[matid]->isTextured)
-							drawable->materials[matid]->tex.unbind();
+					if (i0 < pMesh->numverts && i1 < pMesh->numverts && i2 < pMesh->numverts) {
+						
+						Vec3d v0 = pMesh->vertices[i0];	Vec3d v1 = pMesh->vertices[i1];	Vec3d v2 = pMesh->vertices[i2];
+						if (pMesh->mDeform){ v0 = pMesh->skinvertices[i0];	v1 = pMesh->skinvertices[i1]; v2 = pMesh->skinvertices[i2]; }
+						
+						///\todo how are normals affected during the mesh warp process? -  do we need skin normals too?
+						
+						Vec3d n0 = pMesh->normals[i0];	Vec3d n1 = pMesh->normals[i1];	Vec3d n2 = pMesh->normals[i2];
+						if (pMesh->mDeform){ n0 = pMesh->skinnormals[i0]; n1 = pMesh->skinnormals[i1]; n2 = pMesh->skinnormals[i2]; }
+						
+						Vec2d t0 = pMesh->texcoords[i0]; Vec2d t1 = pMesh->texcoords[i1]; Vec2d t2 = pMesh->texcoords[i2];
+						
+						glNormal3f(n0.x,n0.y,n0.z); glTexCoord2d(t0.x, t0.y); glVertex3d(v0.x, v0.y, v0.z);
+						glNormal3f(n1.x,n1.y,n1.z); glTexCoord2d(t1.x, t1.y); glVertex3d(v1.x, v1.y, v1.z);
+						glNormal3f(n2.x,n2.y,n2.z); glTexCoord2d(t2.x, t2.y); glVertex3d(v2.x, v2.y, v2.z);
+						glEnd();
+						
+						if (matid >= 0) {
+							if (drawable->materials[matid]->isTextured)
+								drawable->materials[matid]->tex.unbind();
+						}
 					}
 					
 				}
-				if (!pMesh->applyMatrices){
-					glPopMatrix();
-				}
+			
+				glPopMatrix();
+				
 			}
 		}
 		
@@ -132,12 +148,8 @@ namespace S9 {
 			
 			shared_ptr<FbxMesh> pMesh = *it;
 			
-			
-			if (!pMesh->applyMatrices){
-				glPushMatrix();
-				glMultMatrixf(pMesh->offset);
-			}
-			
+			glPushMatrix();
+			glMultMatrixf(pMesh->offset);
 			
 			if (pMesh->mDeform) applyRotations(pMesh);
 			
@@ -170,9 +182,8 @@ namespace S9 {
 					
 					
 				}
-				if (!pMesh->applyMatrices){
-					glPopMatrix();
-				}
+				glPopMatrix();
+			
 			}
 		}
 		
@@ -202,11 +213,7 @@ namespace S9 {
 			shared_ptr<FbxCluster> cinderCluster = pMesh->clusters[i];
 			
 			Matrix44d clusterMatrix;
-			if ( pMesh->applyMatrices)
-				clusterMatrix = pMesh->offset * cinderCluster->pretransform * (*cinderCluster->transform) * cinderCluster->posttransform * pMesh->offset.inverted();
-			
-			else	
-				clusterMatrix = cinderCluster->pretransform * (*cinderCluster->transform) * cinderCluster->posttransform;				
+			clusterMatrix = cinderCluster->pretransform * (*cinderCluster->transform) * cinderCluster->posttransform;				
 			
 			// Modify this cluster's matrices by the current indicies weight then add this up for all matrices
 			// affecting that vertex (as multiple clusters can influence one vertex)
@@ -239,6 +246,7 @@ namespace S9 {
 			if (w != 0.0){
 				pMesh->skinvertices[i] = pMesh->skinmatrices[i] * pMesh->vertices[i];
 				pMesh->skinnormals[i] = pMesh->skinmatrices[i].transformVec(pMesh->normals[i]);
+			//	pMesh->skinnormals[i] = pMesh->normals[i];
 			}
 		}
 		
@@ -290,7 +298,6 @@ namespace S9 {
 		
 		for (vector < shared_ptr<FbxRotation> >::iterator it = pMesh->bones.begin(); it != pMesh->bones.end(); it ++){
 			*(*it)->realMatrix = (*it)->baseMatrix;
-			(*it)->normalMatrix.setToIdentity();
 		}
 	}
 	
@@ -374,8 +381,6 @@ namespace S9 {
 				*pBone->realMatrix = *pBone->realMatrix  * tmp;
 				pBone->targeted = true;
 				
-				pBone->normalMatrix *= tmp;
-				
 				
 				for (vector < shared_ptr<FbxRotation> >::iterator it = pMesh->bones.begin(); it != pMesh->bones.end(); it ++){
 					if ((*it)->parent == pMesh->bones[boneid]){
@@ -390,8 +395,7 @@ namespace S9 {
 	
 	void S9FbxDrawer::rotateBoneRecursive(shared_ptr<FbxRotation> pRot, shared_ptr<Matrix44d> pmat, Matrix44d rmat, Matrix44d mat, shared_ptr<FbxMesh> pMesh) {
 		pRot->targeted = true;
-		pRot->normalMatrix *= rmat;
-		
+	
 		*(pRot->realMatrix) =  (*pmat) * rmat * pmat->inverted() * (*pRot->realMatrix);
 		
 		for (vector < shared_ptr<FbxRotation> >::iterator it = pMesh->bones.begin(); it != pMesh->bones.end(); it ++){
