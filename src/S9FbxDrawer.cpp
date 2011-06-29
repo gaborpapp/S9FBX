@@ -1,10 +1,10 @@
 /*
-                       __  .__              ________ 
-   ______ ____   _____/  |_|__| ____   ____/   __   \
-  /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
-  \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
+ __  .__              ________ 
+ ______ ____   _____/  |_|__| ____   ____/   __   \
+ /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
+ \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
  /____  >\___  >\___  >__| |__|\____/|___|  //____/  .co.uk
-      \/     \/     \/                    \/         
+ \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
  
@@ -63,26 +63,32 @@ namespace S9 {
 	
 #pragma mark S9FbxDrawer Class
 	
+	/**
+	 * Draw the FBX Drawable normally, applying the matrix offset
+	 * @param drawable A Shared Pointer to an FbxDrawable
+	 */	
+	
 	void S9FbxDrawer::draw(shared_ptr<FbxDrawable> drawable) {
 		
-		// Draw Normally
+		/// Draw Normally
 		
 		for (vector< shared_ptr<FbxMesh> >::iterator it = drawable->meshes.begin(); it != drawable->meshes.end(); it ++){
 			
 			shared_ptr<FbxMesh> pMesh = *it;
 			
-			
 			glPushMatrix();
 			glMultMatrixf(pMesh->offset);
-			
 			
 			if (pMesh->mDeform) applyRotations(pMesh);
 			
 			if (pMesh->indicies.size() >0 ){
 				int matid = -1;
 				int *ip = (int*)&pMesh->indicies.at(0);
+				int texid = 0;
+				int normid = 0;
 				
-				for (int i =0; i < pMesh->numtris; i ++){
+				for (int i =0; i < pMesh->numtris; i++){
+					
 					if (pMesh->matindicies.size() > 0){
 						matid = pMesh->matindicies[i];
 						
@@ -99,50 +105,57 @@ namespace S9 {
 							
 							glColor3f(r,g,b);
 							
-							// Full Materials For later! :D
+							/// \todo Full Materials For later
 							//	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE, pDancer->mDancer.lMaterials[matid].glMat);
 							
 						}
 					}
+					
+					
 					glBegin(GL_TRIANGLES);
 					
 					int i0 = *ip; ++ip; int i1 = *ip; ++ip; int i2 = *ip; ++ip;
+					
 					
 					if (i0 < pMesh->numverts && i1 < pMesh->numverts && i2 < pMesh->numverts) {
 						
 						Vec3d v0 = pMesh->vertices[i0];	Vec3d v1 = pMesh->vertices[i1];	Vec3d v2 = pMesh->vertices[i2];
 						if (pMesh->mDeform){ v0 = pMesh->skinvertices[i0];	v1 = pMesh->skinvertices[i1]; v2 = pMesh->skinvertices[i2]; }
 						
-						///\todo how are normals affected during the mesh warp process? -  do we need skin normals too?
 						
-						Vec3d n0 = pMesh->normals[i0];	Vec3d n1 = pMesh->normals[i1];	Vec3d n2 = pMesh->normals[i2];
-						if (pMesh->mDeform){ n0 = pMesh->skinnormals[i0]; n1 = pMesh->skinnormals[i1]; n2 = pMesh->skinnormals[i2]; }
 						
-						Vec2d t0 = pMesh->texcoords[i0]; Vec2d t1 = pMesh->texcoords[i1]; Vec2d t2 = pMesh->texcoords[i2];
+						Vec3d n0 = pMesh->normals[normid];	Vec3d n1 = pMesh->normals[normid+1];	Vec3d n2 = pMesh->normals[normid+2];
+						if (pMesh->mDeform){ n0 = pMesh->skinnormals[normid]; n1 = pMesh->skinnormals[normid+1]; n2 = pMesh->skinnormals[normid+2]; }
 						
-						glNormal3f(n0.x,n0.y,n0.z); glTexCoord2d(t0.x, t0.y); glVertex3d(v0.x, v0.y, v0.z);
-						glNormal3f(n1.x,n1.y,n1.z); glTexCoord2d(t1.x, t1.y); glVertex3d(v1.x, v1.y, v1.z);
-						glNormal3f(n2.x,n2.y,n2.z); glTexCoord2d(t2.x, t2.y); glVertex3d(v2.x, v2.y, v2.z);
+						normid +=3;
+						
+						// Texture coords do not have indicies annoyingly!
+						Vec2d tc0 = pMesh->texcoords[texid]; Vec2d tc1 = pMesh->texcoords[++texid]; Vec2d tc2 = pMesh->texcoords[++texid]; ++texid;
+						
+						glTexCoord2d(tc0.x, tc0.y); glNormal3d(n0.x,n0.y,n0.z);  glVertex3d(v0.x, v0.y, v0.z);
+						glTexCoord2d(tc1.x, tc1.y); glNormal3d(n1.x,n1.y,n1.z);  glVertex3d(v1.x, v1.y, v1.z);
+						glTexCoord2d(tc2.x, tc2.y); glNormal3d(n2.x,n2.y,n2.z);  glVertex3d(v2.x, v2.y, v2.z);
 						glEnd();
+						
 						
 						if (matid >= 0) {
 							if (drawable->materials[matid]->isTextured)
 								drawable->materials[matid]->tex.unbind();
 						}
 					}
-					
 				}
-			
-				glPopMatrix();
-				
 			}
+			glPopMatrix();
 		}
-		
 	}
+	
+	/**
+	 * Draw The normals for this model. Offset matrices are not applied.
+	 * @param drawable A Shared Pointer to an FbxDrawable
+	 */	
 	
 	void S9FbxDrawer::drawNormals(shared_ptr<FbxDrawable> drawable) {
 		
-		// Draw Normally
 		
 		for (vector< shared_ptr<FbxMesh> >::iterator it = drawable->meshes.begin(); it != drawable->meshes.end(); it ++){
 			
@@ -158,7 +171,7 @@ namespace S9 {
 				int *ip = (int*)&pMesh->indicies.at(0);
 				
 				for (int i =0; i < pMesh->numtris; i ++){
-		
+					
 					glBegin(GL_LINES);
 					
 					glColor3f(1.0, 0, 0);
@@ -180,16 +193,18 @@ namespace S9 {
 					glVertex3f(v2.x, v2.y, v2.z); glVertex3f(n2.x, n2.y, n2.z);
 					glEnd();
 					
-					
 				}
 				glPopMatrix();
-			
 			}
 		}
-		
 	}
 	
 	///\todo - This should really be a shader operation - it would be faster and no need to copy the vertices
+	
+	/**
+	 * Apply the rotations, recreate the skinvertices for drawing. Should be called often!
+	 * @param pMesh a shared pointer to an FBX Mesh
+	 */	
 	
 	
 	void S9FbxDrawer::applyRotations(shared_ptr<FbxMesh> pMesh) {
@@ -234,19 +249,18 @@ namespace S9 {
 				pMesh->skinweights[idx] += w;
 				
 			}
-			
-			//	cinderCluster->mCentre = centre / cinderCluster->indicies.size();
 		}
 		
 		pMesh->skinvertices = pMesh->vertices;
-		
 		
 		for (int i =0; i < pMesh->skinvertices.size(); ++i){
 			float w = pMesh->skinweights[i];
 			if (w != 0.0){
 				pMesh->skinvertices[i] = pMesh->skinmatrices[i] * pMesh->vertices[i];
-				pMesh->skinnormals[i] = pMesh->skinmatrices[i].transformVec(pMesh->normals[i]);
-			//	pMesh->skinnormals[i] = pMesh->normals[i];
+				
+				int idx = pMesh->indiciesToIterative[pMesh->indicies[i]];
+				
+				pMesh->skinnormals[idx] = pMesh->skinmatrices[i].transformVec(pMesh->normals[idx]);
 			}
 		}
 		
@@ -290,8 +304,15 @@ namespace S9 {
 			else {
 				cinderCluster->mCentre = centre;
 			}
+			
 		}
 	}
+	
+	
+	/**
+	 * Reset the rotations back to identity
+	 * @param pMesh a shared pointer to the FBX Mesh
+	 */	
 	
 	
 	void S9FbxDrawer::resetRotations(shared_ptr<FbxMesh> pMesh) {
@@ -300,6 +321,11 @@ namespace S9 {
 			*(*it)->realMatrix = (*it)->baseMatrix;
 		}
 	}
+	
+	/**
+	 * Draw the mesh extents to the screen, applying the mesh offsets
+	 * @param pMesh a shared pointer to the FBX Mesh
+	 */	
 	
 	void S9FbxDrawer::drawMeshExtents(shared_ptr<FbxMesh> pMesh) {
 		
@@ -334,9 +360,18 @@ namespace S9 {
 		
 	}
 	
+	/**
+	 * Draw the clusters calculated in the apply rotations function
+	 * @param drawable A Shared Pointer to an FbxDrawable
+	 */	
+	
 	void S9FbxDrawer::drawClusters(shared_ptr<FbxDrawable> pDrawable) {
 		
+		glPushMatrix();
+		
 		shared_ptr<FbxMesh> pMesh = pDrawable->meshes[0];
+		glMultMatrixf(pMesh->offset);
+		
 		Sphere tsphere;
 		tsphere.setCenter(Vec3f(0,0,0));
 		
@@ -346,22 +381,31 @@ namespace S9 {
 			shared_ptr<FbxCluster> pCluster = *it;
 			
 			if (pCluster->mCentre != Vec3f::zero()) {
-				
 				Vec3f dv = pCluster->mMax;
 				float d = dv.distance(pCluster->mMin);
 				
 				tsphere.setRadius(d / 2.0);	// TODO - with the max and min its not great. Bounding box maybe better
 				glPushMatrix();
-				glTranslatef(pCluster->mCentre.x, pCluster->mCentre.y, pCluster->mCentre.z);
+				glTranslated(pCluster->mCentre.x, pCluster->mCentre.y, pCluster->mCentre.z);
+				
 				gl::draw(tsphere);
 				glPopMatrix();
+				
 			}
 			idx++;
 		}
+		glPopMatrix();
 	}
 	
 	
 #pragma mark Bone Rotations
+	
+	/**
+	 * Rotate a bone using a rotation matrix
+	 * @param pMesh A Shared Pointer to an FBX Mesh
+	 * @param boneid the id of the bone to be rotated
+	 * @param mat a reference to a rotation matrix for this bone
+	 */	
 	
 	void S9FbxDrawer::rotateBone(shared_ptr<FbxMesh> pMesh, int boneid, ci::Matrix44d &mat) {
 		if (boneid > -1 && boneid < pMesh->bones.size()) {
@@ -391,11 +435,13 @@ namespace S9 {
 		}
 	}
 	
-	
+	/**
+	 * Internal recursive rotation function. Not to be called
+	 */
 	
 	void S9FbxDrawer::rotateBoneRecursive(shared_ptr<FbxRotation> pRot, shared_ptr<Matrix44d> pmat, Matrix44d rmat, Matrix44d mat, shared_ptr<FbxMesh> pMesh) {
 		pRot->targeted = true;
-	
+		
 		*(pRot->realMatrix) =  (*pmat) * rmat * pmat->inverted() * (*pRot->realMatrix);
 		
 		for (vector < shared_ptr<FbxRotation> >::iterator it = pMesh->bones.begin(); it != pMesh->bones.end(); it ++){
@@ -404,6 +450,19 @@ namespace S9 {
 			}
 		}
 		
+	}
+	
+#pragma mark Helper Functions
+	
+	/**
+	 * Return a cluster given a drawable and boneid. Assumes the first mesh within the drawable
+	 * @param drawable A shared pointer to the Fbx Drawable
+	 * @param boneid the id of the bone in question
+	 */
+	
+	std::shared_ptr<FbxCluster> S9FbxDrawer::getCluster(std::shared_ptr<FbxDrawable> drawable, int boneid) {
+		shared_ptr<FbxMesh> pMesh = drawable->meshes[0];
+		return pMesh->clusters[boneid];
 	}
 	
 	

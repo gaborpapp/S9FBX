@@ -8,24 +8,39 @@
  
  THE GHOST IN THE CSH
  
- 
- S9FbxLoader.h | Part of S9FBX | Created 03/02/2011
- 
- Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
- *** Section9 ***
+ */
+
+/**
+ * @brief	The NITE and OpenNI Version of the Kinect Stuff. You need to have OpenNI all installed
+ *			and in the right place!
+ *			Library Search Paths need to point to where you have the Kinect OpenNI Linux x86 libs
+ *			OPENNI_LIBS custom setting should point to the lib dir of this project
+ *			There are quite a few XML Files that are needed as well that you should configure
+ *
+ * @file	S9FbxLoader.h
+ * @author	Benjamin Blundell <oni@section9.co.uk>
+ * @date	13/04/2011
+ * Part of  FBX Block
+ * 
+ * @section LICENSE 
+ * 
+ * Copyright (c) 2010 Benjamin Blundell, www.section9.co.uk
+ * Section9 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Section9 nor the names of its contributors
- *       may be used to endorse or promote products derived from this software
- *       without specific prior written permission.
+ *	Redistributions of source code must retain the above copyright
+ *  notice, this list of conditions and the following disclaimer.
+ *  
+ *  Redistributions in binary form must reproduce the above copyright
+ *  notice, this list of conditions and the following disclaimer in the
+ *  documentation and/or other materials provided with the distribution.
+ *  
+ *  Neither the name of Section9 nor the names of its contributors
+ *  may be used to endorse or promote products derived from this software
+ *  without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -37,8 +52,9 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***********************************************************************/
+ * 
+ */
+
 
 /* Based on the work by Anthony Scavarelli on 11-01-04 and myself */
 
@@ -71,7 +87,6 @@ namespace S9 {
 		Matrix44d					baseMatrix;
 		std::shared_ptr<Matrix44d>	realMatrix;	// Shared pointer here too keeps the right matrix in the right place
 		Matrix44d					rotMatrix;
-		Matrix44d					normalMatrix;
 		
 		std::shared_ptr<FbxRotation>	parent;
 		bool					targeted;
@@ -87,8 +102,9 @@ namespace S9 {
 		
 		KFbxCluster::ELinkMode		mode;
 		
-		std::shared_ptr<FbxRotation>		bone;
-		std::vector<int>					indicies;
+		std::shared_ptr<FbxRotation>	bone;
+		std::vector<int>				indicies;
+		std::vector<int>				normalindicies;	// Annoyingly a vertex can have multiple normals >< 
 		std::vector<float>				weights;
 		
 		// Extents of this cluster
@@ -118,13 +134,14 @@ namespace S9 {
 		std::vector<float>		skinweights;
 		std::vector<Matrix44d>	skinmatrices;
 		
-		float*				floats;
 		
 		std::vector<Vec3d>		normals;
 		std::vector<Vec3d>		skinnormals;
 		std::vector<Vec2d>		texcoords;
-		std::vector<int>			indicies;		// Maybe need a long for that?
-		std::vector<int>			matindicies;	// per triangle! (we assume triangles here)
+		std::vector<int>		indicies;				// Maybe need a long for that?
+		std::vector<int>		texindicies;			// Apparently we need this too!
+		std::vector<int>		indiciesToIterative;	// Map from vertex indicies to iterative array position
+		std::vector<int>		matindicies;			// per triangle! (we assume triangles here)
 		
 		ci::Matrix44d		offset;
 		int					numtris;
@@ -136,8 +153,6 @@ namespace S9 {
 		// Extents of this Mesh
 		Vec3d mMax;
 		Vec3d mMin;
-		
-		bool applyMatrices;
 		
 		bool mDeform;
 		
@@ -189,7 +204,6 @@ namespace S9 {
 		void loadSupportedMaterials(std::shared_ptr<FbxDrawable>  pDrawable);
 		void loadSupportedMaterialsRecursive(KFbxNode* pNode, std::shared_ptr<FbxDrawable>  pDrawable);
 		gl::Texture loadTexture(KFbxTexture* pTexture, std::shared_ptr<FbxDrawable>  pDrawable);
-		
 		
 		KArrayTemplate<gl::Texture>		mTextureArray;
 		

@@ -1,10 +1,10 @@
 /*
-                       __  .__              ________ 
-   ______ ____   _____/  |_|__| ____   ____/   __   \
-  /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
-  \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
+ __  .__              ________ 
+ ______ ____   _____/  |_|__| ____   ____/   __   \
+ /  ___// __ \_/ ___\   __\  |/  _ \ /    \____    /
+ \___ \\  ___/\  \___|  | |  (  <_> )   |  \ /    / 
  /____  >\___  >\___  >__| |__|\____/|___|  //____/  .co.uk
-      \/     \/     \/                    \/         
+ \/     \/     \/                    \/         
  
  THE GHOST IN THE CSH
  
@@ -82,7 +82,6 @@ namespace S9{
 	}
 	
 	shared_ptr<FbxDrawable> S9FbxLoader::load(string fileName){
-		
 		
 		shared_ptr<FbxDrawable> drawable(new FbxDrawable());
 		
@@ -236,7 +235,7 @@ namespace S9{
 				// Create a new Cinder Mesh
 				shared_ptr<FbxMesh> pMesh(new FbxMesh());
 				pDrawable->meshes.push_back(pMesh);
-		
+				
 				pMesh->mMin.x = pMesh->mMin.y = pMesh->mMin.z = 10000000.0;
 				pMesh->mMax.x = pMesh->mMax.y = pMesh->mMax.z = -10000000.0;
 				
@@ -267,7 +266,7 @@ namespace S9{
 	
 	void S9FbxLoader::setupForCinderMesh(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pGlobalPosition, shared_ptr<FbxMesh> pMesh){
 		
-		// Setup a Mesh - ASSUMING TRIANGLES ONLY! (for now!)
+		// Setup a Mesh - Should all be triangles thanks to triangulation function
 		
 		KFbxMesh* lMesh = (KFbxMesh*) pNode->GetNodeAttribute();
 		pMesh->offset = toCinderMatrix(pGlobalPosition); 
@@ -278,23 +277,19 @@ namespace S9{
 		if (vertexCount != 0) {
 			
 			int polygonCount = lMesh->GetPolygonCount();
-			int indiciesCount = lMesh->GetPolygonVertexCount();
+			int indiciesCount = polygonCount * 3;
 			
 			// Setup the Mesh Containers - Populate so we can assign
 			
 			pMesh->indicies.reserve(indiciesCount);
+			
 			pMesh->vertices.reserve(vertexCount);
-			pMesh->texcoords.reserve(vertexCount);
-			pMesh->normals.reserve(vertexCount);
+			pMesh->texcoords.reserve(polygonCount * 3);
+			pMesh->normals.reserve(polygonCount * 3);
 			
 			pMesh->numtris = polygonCount;
 			pMesh->numverts = vertexCount;
 			
-			// Indicies
-			int* pindices = lMesh->GetPolygonVertices();
-			for (int i =0; i < indiciesCount; ++i){
-				pMesh->indicies.push_back(pindices[i]);
-			}
 			
 			
 			// Vertices (and a copy of skinned vertices and matrices as well)
@@ -307,8 +302,6 @@ namespace S9{
 			}
 			
 			KFbxVector4* pvertices = lMesh->GetControlPoints();
-			
-			pMesh->floats = new float[vertexCount * 3];
 			
 			for (int i =0; i < vertexCount; ++i){
 				
@@ -324,7 +317,8 @@ namespace S9{
 				if ( vert.z > pMesh->mMax.z) pMesh->mMax.z = vert.z;
 				
 				pMesh->vertices.push_back( vert ) ;
-			
+				
+				
 				if (sv) {
 					pMesh->skinvertices.push_back( vert ) ;
 					Matrix44d m(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0); // If we arent using additive or total in FBX Matrices
@@ -333,36 +327,43 @@ namespace S9{
 				}
 			}
 			
-			
 			// Normals
 			
-			KFbxLayerElementArrayTemplate<KFbxVector4> *lNormals = NULL;
-			bool normalStatus = lMesh->GetNormals(&lNormals);
-			if (normalStatus) {
-				for (int i =0; i < vertexCount; ++i){
+			for (int i = 0; i < polygonCount; ++i) {
+				for (int j = 0; j < 3; ++j){
 					
-					Vec3d norm (lNormals->GetAt(i)[0],lNormals->GetAt(i)[1],lNormals->GetAt(i)[2]);
+					KFbxVector4 pNormal;
+					lMesh->GetPolygonVertexNormal(i, j, pNormal);
+					Vec3d norm(pNormal[0],pNormal[1],pNormal[2]);
+					pMesh->normals.push_back(norm);
 					
-					pMesh->normals.push_back( norm ) ;
 					if (sv) {
 						pMesh->skinnormals.push_back(norm);
 					}
 				}
 			}
 			
+			// Indicies
 			
-			// Textures
+			pMesh->indiciesToIterative.reserve(polygonCount * 3);
+			int idx = 0;
+			
+			for (int i = 0; i < polygonCount; ++i) {
+				for (int j = 0; j < 3; ++j){
+					pMesh->indicies.push_back(lMesh->GetPolygonVertex(i,j));
+					pMesh->indiciesToIterative[lMesh->GetPolygonVertex(i,j)] = idx;
+					++idx;
+				}
+			}
+			
+			// Textures - Textures need seperate indicies as we can have multiple coords per vertex.
 			
 			KFbxLayerElement::EMappingMode lMappingMode = KFbxLayerElement::eNONE;
 			KFbxLayerElementArrayTemplate<KFbxVector2>* lUVArray = NULL;
 			lMesh->GetTextureUV(&lUVArray, KFbxLayerElement::eDIFFUSE_TEXTURES);
 			
-			if (lUVArray) {
 			
-				for (int i =0; i < vertexCount; ++i){
-					pMesh->texcoords.push_back( Vec2f(0,0) ) ;
-				}
-				
+			if (lUVArray) {
 				
 				for (int i = 0; i < polygonCount; ++i) {
 					
@@ -376,7 +377,7 @@ namespace S9{
 						}
 					}
 					
-					for (int j = 0; j < 3; j++){
+					for (int j = 0; j < 3; ++j){
 						
 						int lCurrentUVIndex;
 						
@@ -389,14 +390,13 @@ namespace S9{
 							lCurrentUVIndex = lMesh->GetPolygonVertex(i, j);
 						
 						if (lCurrentUVIndex != -1){
-				
-							pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].x = (float)lUVArray->GetAt(lCurrentUVIndex)[0];
-							pMesh->texcoords[ lMesh->GetPolygonVertex(i,j) ].y = 1.0 - (float)lUVArray->GetAt(lCurrentUVIndex)[1];
+							pMesh->texcoords.push_back ( Vec2d( lUVArray->GetAt(lCurrentUVIndex)[0],1.0 - lUVArray->GetAt(lCurrentUVIndex)[1]) );
 						}
 					}
 				}
 			}
 		}
+		
 	}
 	
 	void S9FbxLoader::setupForCinderSkeleton(shared_ptr<FbxDrawable>  pDrawable, KFbxNode* pNode, KFbxXMatrix& pParentGlobalPosition) {
@@ -484,11 +484,10 @@ namespace S9{
 				cinderCluster->transform = b->realMatrix;
 				cinderCluster->pretransform = pr;
 				cinderCluster->posttransform = ps;
-
+				
 				// Setup the Indices and weights - it SHOULD be indices and weights for the matrices we currently have
 				
 				int numIndicies = fbxCluster->GetControlPointIndicesCount();
-				
 				
 				Vec3d centre (0,0,0);
 				
@@ -509,6 +508,8 @@ namespace S9{
 					cinderCluster->mMin.x = vert.x < cinderCluster->mMin.x ? vert.x : cinderCluster->mMin.x;
 					cinderCluster->mMin.y = vert.y < cinderCluster->mMin.y ? vert.y : cinderCluster->mMin.y;
 					cinderCluster->mMin.z = vert.z < cinderCluster->mMin.z ? vert.z : cinderCluster->mMin.z;
+					
+					cinderCluster->normalindicies.push_back( pCinderMesh->indiciesToIterative[fbxCluster->GetControlPointIndices()[j]]);
 					
 					centre += vert;
 					
