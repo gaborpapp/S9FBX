@@ -73,6 +73,8 @@
 
 #include <fbxsdk.h>
 #include <list>
+#include <string>
+#include <map>
 #include "Common.h"
 
 using namespace cinder;
@@ -150,6 +152,8 @@ namespace S9 {
 		std::vector< std::shared_ptr<FbxCluster> > clusters;
 		std::vector< std::shared_ptr<FbxRotation> > bones;
 		
+		std::map< std::string, int > boneNameToIndex; // Map from bone name to bone index
+
 		// Extents of this Mesh
 		Vec3d mMax;
 		Vec3d mMin;

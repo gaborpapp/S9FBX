@@ -468,17 +468,20 @@ namespace S9{
 				cinderCluster->bone = b;
 				pCinderMesh->bones.push_back(b);
 				b->targeted = false;
-				
+
 				cinderToFBX[b] = fbxCluster->GetLink();
-				
-				
+
+				// add bone name to map
+				string boneName( fbxCluster->GetLink()->GetName() );
+				pCinderMesh->boneNameToIndex[ boneName ] = pCinderMesh->bones.size() - 1;
+
 				// Apply the Matrices
-				
+
 				Matrix44d m = toCinderMatrix(lClusterGlobalCurrentPosition);
 				b->baseMatrix = m;
 				b->realMatrix = shared_ptr<Matrix44d>( new Matrix44d(m) );
-				
-				
+
+
 				Matrix44d pr = toCinderMatrix(lReferenceGlobalCurrentPosition.Inverse());
 				Matrix44d ps = toCinderMatrix(lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition);
 				cinderCluster->transform = b->realMatrix;
