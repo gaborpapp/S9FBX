@@ -1,0 +1,31 @@
+Import('env')
+
+FBX_VERSION = '20113'
+
+_INCLUDES = [Dir('../src').abspath, Dir('../include').abspath,
+		Dir('../lib/FBXSDK' + FBX_VERSION + '/include').abspath]
+
+_SOURCES = ['Common.cxx', 'S9FbxDrawer.cpp', 'S9FbxLoader.cpp']
+_SOURCES = [File('../src/' + s).abspath for s in _SOURCES]
+
+_LIBS = ['fbxsdk_' + FBX_VERSION]
+
+if env['PLATFORM'] == 'darwin':
+	_LIBPATH = [Dir('../lib/FBXSDK' + FBX_VERSION + '/lib/gcc4/').abspath]
+else:
+	_LIBPATH = [] # TODO
+
+env.Append(APP_SOURCES = _SOURCES)
+env.Append(CPPPATH = _INCLUDES)
+env.Append(LIBS = _LIBS)
+env.Append(LIBPATH = _LIBPATH)
+
+# copy fbxsdk dylib to app
+if (env['PLATFORM'] == 'darwin') and ('APP_TARGET' in env):
+	dylib = '/libfbxsdk_' + FBX_VERSION + '.dylib'
+	fout = env['APP_TARGET'] + '.app/Contents/MacOS/' + dylib
+	fin = _LIBPATH[0] + dylib
+	Command('#' + fout, fin, Copy(fout, fin))
+
+
+Return('env')
