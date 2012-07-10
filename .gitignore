@@ -1,0 +1,4 @@
+*.o
+scons
+!scons/SConscript
+!scons/.gitignore
