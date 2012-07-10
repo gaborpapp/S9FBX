@@ -167,7 +167,7 @@ namespace S9 {
 			if (pMesh->mDeform) applyRotations(pMesh);
 			
 			if (pMesh->indicies.size() >0 ){
-				int matid = -1;
+				//int matid = -1;
 				int *ip = (int*)&pMesh->indicies.at(0);
 				
 				for (int i =0; i < pMesh->numtris; i ++){

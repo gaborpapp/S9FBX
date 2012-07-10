@@ -65,25 +65,25 @@ void Skinning::setup() {
 	mParams.addParam( "Scale ", &gConfigScene.scale, "min=0.001 max=10.0 step=0.001");
 	
 	gConfigScene.scale = 0.04;
-	
+
 	mShowParams = false;
 	mBoneID = mPrevBoneID = -1;
 	mDrawFilled = true;
 	mDrawNormals = false;
 	// OpenGL Constants
-	
+
 	gl::enableDepthRead();
 	gl::enableDepthWrite();
-	
+
 	glEnable(GL_TEXTURE_2D);
-	
-	cout << getAppPath() + "/../skinning_config.xml" << endl;
-	
-	XmlTree doc( loadFile(getAppPath() + "/../skinning_config.xml"));
+
+	cout << getAppPath().string() + "/Contents/Resources/skinning_config.xml" << endl;
+
+	XmlTree doc( loadFile(getAppPath().string() + "/Contents/Resources/skinning_config.xml"));
 	string fbxpath = doc.getChild("/skinning/fbx").getValue();
-		
-	pDrawable = mFBXLoader.load(getAppPath() + "/../" + fbxpath.c_str());
-	
+
+	console() << fbxpath << endl;
+	pDrawable = mFBXLoader.load(getAppPath().string() + "/Contents/Resources/" + fbxpath.c_str());
 }
 
 

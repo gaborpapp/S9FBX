@@ -109,7 +109,7 @@ bool SaveScene(KFbxSdkManager* pSdkManager, KFbxDocument* pScene, const char* pF
                 if (pSdkManager->GetIOPluginRegistry()->WriterIsFBX(lFormatIndex))
                 {
                     KString lDesc =pSdkManager->GetIOPluginRegistry()->GetWriterFormatDescription(lFormatIndex);
-                    char *lASCII = "ascii";
+                    const char *lASCII = "ascii";
                     if (lDesc.Find(lASCII)>=0)
                     {
                         pFileFormat = lFormatIndex;

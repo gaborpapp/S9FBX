@@ -676,7 +676,7 @@ namespace S9{
 	gl::Texture S9FbxLoader::loadTexture(KFbxTexture* pTexture, shared_ptr<FbxDrawable>  pDrawable) {
 		std::string textureFileName = std::string(pTexture->GetFileName());
 		
-		int lCount = mTextureArray.GetCount();
+		//int lCount = mTextureArray.GetCount();
 		
 		map<std::string,gl::Texture>::iterator it;
 		it= pDrawable->mMapToTex.find(textureFileName);
