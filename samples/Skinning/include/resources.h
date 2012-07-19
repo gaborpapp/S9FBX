@@ -53,6 +53,6 @@
 #pragma once
 #include "cinder/CinderResources.h"
 
-#define RES_PHONG_VERT_GLSL			CINDER_RESOURCE( /resources/, phong.vert, 128, GLSL )
-#define RES_PHONG_FRAG_GLSL			CINDER_RESOURCE( /resources/, phong.frag, 129, GLSL )
+#define RES_PHONG_VERT_GLSL			CINDER_RESOURCE( ../resources/, phong.vert, 128, GLSL )
+#define RES_PHONG_FRAG_GLSL			CINDER_RESOURCE( ../resources/, phong.frag, 129, GLSL )
 

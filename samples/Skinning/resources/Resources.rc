@@ -1,0 +1,4 @@
+#include "..\include\Resources.h"
+
+RES_PHONG_VERT_GLSL
+RES_PHONG_FRAG_GLSL

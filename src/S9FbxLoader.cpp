@@ -345,7 +345,7 @@ namespace S9{
 			
 			// Indicies
 			
-			pMesh->indiciesToIterative.reserve(polygonCount * 3);
+			pMesh->indiciesToIterative.resize(polygonCount * 3);
 			int idx = 0;
 			
 			for (int i = 0; i < polygonCount; ++i) {

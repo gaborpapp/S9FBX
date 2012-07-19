@@ -79,11 +79,19 @@ void Skinning::setup() {
 
 	cout << getAppPath().string() + "/Contents/Resources/skinning_config.xml" << endl;
 
+#ifdef CINDER_MAC
 	XmlTree doc( loadFile(getAppPath().string() + "/Contents/Resources/skinning_config.xml"));
+#else if CINDER_MSW
+	XmlTree doc( loadFile(getAppPath().string() + "../../Resources/skinning_config.xml"));
+#endif
 	string fbxpath = doc.getChild("/skinning/fbx").getValue();
 
 	console() << fbxpath << endl;
+#ifdef CINDER_MAC
 	pDrawable = mFBXLoader.load(getAppPath().string() + "/Contents/Resources/" + fbxpath.c_str());
+#else if CINDER_MSW
+	pDrawable = mFBXLoader.load(getAppPath().string() + "../" + fbxpath.c_str());
+#endif
 }
 
 

@@ -14436,7 +14436,7 @@ Objects:  {
 		AudioColor: 0,1,0
 		CameraOrthoZoom: 1
 	}
-	Material: "Material::Sinbad_Body__sinbad_body_tga", "" {
+	Material: "Material::Sinbad_Body__sinbad_body_png", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -14466,7 +14466,7 @@ Objects:  {
 			Property: "Reflectivity", "double", "",0
 		}
 	}
-	Material: "Material::Sinbad_Clothes__sinbad_clothes_tga", "" {
+	Material: "Material::Sinbad_Clothes__sinbad_clothes_png", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -14496,7 +14496,7 @@ Objects:  {
 			Property: "Reflectivity", "double", "",0
 		}
 	}
-	Material: "Material::Sinbad_Eyes__sinbad_body_tga", "" {
+	Material: "Material::Sinbad_Eyes__sinbad_body_png", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -14526,7 +14526,7 @@ Objects:  {
 			Property: "Reflectivity", "double", "",0
 		}
 	}
-	Material: "Material::Sinbad_Gold__sinbad_clothes_tga", "" {
+	Material: "Material::Sinbad_Gold__sinbad_clothes_png", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -14586,7 +14586,7 @@ Objects:  {
 			Property: "Reflectivity", "double", "",0
 		}
 	}
-	Material: "Material::Sinbad_Spikes__sinbad_clothes_tga", "" {
+	Material: "Material::Sinbad_Spikes__sinbad_clothes_png", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -14616,7 +14616,7 @@ Objects:  {
 			Property: "Reflectivity", "double", "",0
 		}
 	}
-	Material: "Material::Sinbad_Teeth__sinbad_body_tga", "" {
+	Material: "Material::Sinbad_Teeth__sinbad_body_png", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -14646,14 +14646,14 @@ Objects:  {
 			Property: "Reflectivity", "double", "",0
 		}
 	}
-	Video: "Video::sinbad_body_tga", "Clip" {
+	Video: "Video::sinbad_body_png", "Clip" {
         Type: "Clip"
         Properties60:  {
             Property: "FrameRate", "double", "",0
             Property: "LastFrame", "int", "",0
             Property: "Width", "int", "",0
             Property: "Height", "int", "",0
-			Property: "Path", "charptr", "", "sinbad_body.tga"
+			Property: "Path", "charptr", "", "sinbad_body.png"
             Property: "StartFrame", "int", "",0
             Property: "StopFrame", "int", "",0
             Property: "PlaySpeed", "double", "",1
@@ -14664,17 +14664,17 @@ Objects:  {
             Property: "AccessMode", "enum", "",0
         }
         UseMipMap: 0
-		Filename: "sinbad_body.tga"
-		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_body.tga"
+		Filename: "sinbad_body.png"
+		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_body.png"
 	}
-	Video: "Video::sinbad_clothes_tga", "Clip" {
+	Video: "Video::sinbad_clothes_png", "Clip" {
         Type: "Clip"
         Properties60:  {
             Property: "FrameRate", "double", "",0
             Property: "LastFrame", "int", "",0
             Property: "Width", "int", "",0
             Property: "Height", "int", "",0
-			Property: "Path", "charptr", "", "sinbad_clothes.tga"
+			Property: "Path", "charptr", "", "sinbad_clothes.png"
             Property: "StartFrame", "int", "",0
             Property: "StopFrame", "int", "",0
             Property: "PlaySpeed", "double", "",1
@@ -14685,13 +14685,13 @@ Objects:  {
             Property: "AccessMode", "enum", "",0
         }
         UseMipMap: 0
-		Filename: "sinbad_clothes.tga"
-		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_clothes.tga"
+		Filename: "sinbad_clothes.png"
+		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_clothes.png"
 	}
-	Texture: "Texture::sinbad_body_tga", "TextureVideoClip" {
+	Texture: "Texture::sinbad_body_png", "TextureVideoClip" {
 		Type: "TextureVideoClip"
 		Version: 202
-		TextureName: "Texture::sinbad_body_tga"
+		TextureName: "Texture::sinbad_body_png"
         Properties60:  {
             Property: "Translation", "Vector", "A+",0,0,0
             Property: "Rotation", "Vector", "A+",0,0,0
@@ -14709,18 +14709,18 @@ Objects:  {
             Property: "TextureScalingPivot", "Vector3D", "",0,0,0
             Property: "VideoProperty", "object", ""
         }
-		Media: "Video::sinbad_body_tga"
-		FileName: "sinbad_body.tga"
-		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_body.tga"
+		Media: "Video::sinbad_body_png"
+		FileName: "sinbad_body.png"
+		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_body.png"
         ModelUVTranslation: 0,0
         ModelUVScaling: 1,1
         Texture_Alpha_Source: "None"
         Cropping: 0,0,0,0
     }
-	Texture: "Texture::sinbad_clothes_tga", "TextureVideoClip" {
+	Texture: "Texture::sinbad_clothes_png", "TextureVideoClip" {
 		Type: "TextureVideoClip"
 		Version: 202
-		TextureName: "Texture::sinbad_clothes_tga"
+		TextureName: "Texture::sinbad_clothes_png"
         Properties60:  {
             Property: "Translation", "Vector", "A+",0,0,0
             Property: "Rotation", "Vector", "A+",0,0,0
@@ -14738,9 +14738,9 @@ Objects:  {
             Property: "TextureScalingPivot", "Vector3D", "",0,0,0
             Property: "VideoProperty", "object", ""
         }
-		Media: "Video::sinbad_clothes_tga"
-		FileName: "sinbad_clothes.tga"
-		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_clothes.tga"
+		Media: "Video::sinbad_clothes_png"
+		FileName: "sinbad_clothes.png"
+		RelativeFilename: "/Users/oni/Desktop/Skinning/Sinbad_blender/sinbad_clothes.png"
         ModelUVTranslation: 0,0
         ModelUVScaling: 1,1
         Texture_Alpha_Source: "None"
@@ -16656,27 +16656,27 @@ Relations:  {
     }
     Model: "Model::Camera Switcher", "CameraSwitcher" {
     }
-	Material: "Material::Sinbad_Body__sinbad_body_tga", "" {
+	Material: "Material::Sinbad_Body__sinbad_body_png", "" {
 	}
-	Material: "Material::Sinbad_Clothes__sinbad_clothes_tga", "" {
+	Material: "Material::Sinbad_Clothes__sinbad_clothes_png", "" {
 	}
-	Material: "Material::Sinbad_Eyes__sinbad_body_tga", "" {
+	Material: "Material::Sinbad_Eyes__sinbad_body_png", "" {
 	}
-	Material: "Material::Sinbad_Gold__sinbad_clothes_tga", "" {
+	Material: "Material::Sinbad_Gold__sinbad_clothes_png", "" {
 	}
 	Material: "Material::Sinbad_Sheaths", "" {
 	}
-	Material: "Material::Sinbad_Spikes__sinbad_clothes_tga", "" {
+	Material: "Material::Sinbad_Spikes__sinbad_clothes_png", "" {
 	}
-	Material: "Material::Sinbad_Teeth__sinbad_body_tga", "" {
+	Material: "Material::Sinbad_Teeth__sinbad_body_png", "" {
 	}
-	Texture: "Texture::sinbad_body_tga", "TextureVideoClip" {
+	Texture: "Texture::sinbad_body_png", "TextureVideoClip" {
 	}
-	Texture: "Texture::sinbad_clothes_tga", "TextureVideoClip" {
+	Texture: "Texture::sinbad_clothes_png", "TextureVideoClip" {
 	}
-	Video: "Video::sinbad_body_tga", "Clip" {
+	Video: "Video::sinbad_body_png", "Clip" {
 	}
-	Video: "Video::sinbad_clothes_tga", "Clip" {
+	Video: "Video::sinbad_clothes_png", "Clip" {
 	}
 	Deformer: "Deformer::Skin Sinbad", "Skin" {
 	}
@@ -16827,17 +16827,17 @@ Connections:  {
 	Connect: "OO", "Model::blend_root", "Model::Scene"
 	Connect: "OO", "Model::Sinbad", "Model::Armature"
 	Connect: "OO", "Model::Armature", "Model::blend_root"
-	Connect: "OO", "Material::Sinbad_Body__sinbad_body_tga", "Model::Sinbad"
-	Connect: "OO", "Material::Sinbad_Clothes__sinbad_clothes_tga", "Model::Sinbad"
-	Connect: "OO", "Material::Sinbad_Eyes__sinbad_body_tga", "Model::Sinbad"
-	Connect: "OO", "Material::Sinbad_Gold__sinbad_clothes_tga", "Model::Sinbad"
+	Connect: "OO", "Material::Sinbad_Body__sinbad_body_png", "Model::Sinbad"
+	Connect: "OO", "Material::Sinbad_Clothes__sinbad_clothes_png", "Model::Sinbad"
+	Connect: "OO", "Material::Sinbad_Eyes__sinbad_body_png", "Model::Sinbad"
+	Connect: "OO", "Material::Sinbad_Gold__sinbad_clothes_png", "Model::Sinbad"
 	Connect: "OO", "Material::Sinbad_Sheaths", "Model::Sinbad"
-	Connect: "OO", "Material::Sinbad_Spikes__sinbad_clothes_tga", "Model::Sinbad"
-	Connect: "OO", "Material::Sinbad_Teeth__sinbad_body_tga", "Model::Sinbad"
-	Connect: "OO", "Texture::sinbad_body_tga", "Model::Sinbad"
-	Connect: "OO", "Texture::sinbad_clothes_tga", "Model::Sinbad"
-	Connect: "OO", "Video::sinbad_body_tga", "Texture::sinbad_body_tga"
-	Connect: "OO", "Video::sinbad_clothes_tga", "Texture::sinbad_clothes_tga"
+	Connect: "OO", "Material::Sinbad_Spikes__sinbad_clothes_png", "Model::Sinbad"
+	Connect: "OO", "Material::Sinbad_Teeth__sinbad_body_png", "Model::Sinbad"
+	Connect: "OO", "Texture::sinbad_body_png", "Model::Sinbad"
+	Connect: "OO", "Texture::sinbad_clothes_png", "Model::Sinbad"
+	Connect: "OO", "Video::sinbad_body_png", "Texture::sinbad_body_png"
+	Connect: "OO", "Video::sinbad_clothes_png", "Texture::sinbad_clothes_png"
 	Connect: "OO", "Deformer::Skin Sinbad", "Model::Sinbad"
 	Connect: "OO", "SubDeformer::Cluster Sinbad Root", "Deformer::Skin Sinbad"
 	Connect: "OO", "SubDeformer::Cluster Sinbad Waist", "Deformer::Skin Sinbad"
