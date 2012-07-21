@@ -4,8 +4,8 @@ env['APP_TARGET'] = 'Skinning'
 env['APP_SOURCES'] = ['Skinning.cpp']
 
 env['RESOURCES'] = ['Sinbad.fbx', 'phong.frag', 'phong.vert',
-					'sinbad_body.tga', 'sinbad_clothes.tga',
-					'sinbad_sword.tga', 'skinning_config.xml' ]
+					'sinbad_body.png', 'sinbad_clothes.png',
+					'sinbad_sword.png', 'skinning_config.xml' ]
 
 # S9FBX block
 env = SConscript('../../../scons/SConscript', exports = 'env')
